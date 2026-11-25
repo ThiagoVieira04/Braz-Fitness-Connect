@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placa Digital - Academia Braz Fitness</title>
+    <link rel="icon" type="image/jpeg" href="assets/img/logo.jpeg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0b0b0b;
+            --bg-surface: #151713;
+            --neon: #A6FF00;
+            --neon-dark: #7CBF00;
+            --card-bg: #ffffff;
+            --card-border: #e5e8e0;
+            --text-dark: #111111;
+            --text-muted: #555555;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: #1a1a1a;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 40px;
+            gap: 18px;
+        }
+
+        /* Barra de ferramentas (não sai na impressão/PDF) */
+        .toolbar {
+            width: 900px;
+            max-width: 100%;
+            background: #111111;
+            border: 1px solid rgba(166, 255, 0, 0.35);
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            color: #f0f0f0;
+        }
+
+        .toolbar-url-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .toolbar-url-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--neon);
+            white-space: nowrap;
+        }
+
+        .toolbar-url-group input {
+            flex: 1;
+            min-width: 160px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #1d1d1d;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .toolbar-url-group input:focus {
+            border-color: var(--neon);
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-tool {
+            border: none;
+            border-radius: 10px;
+            padding: 9px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .btn-tool:hover {
+            transform: translateY(-1px);
+            opacity: 0.92;
+        }
+
+        .btn-print {
+            background: var(--neon);
+            color: #0b0b0b;
+        }
+
+        /* Área da Placa (900x1200 proporção 3:4) */
+        .board {
+            width: 900px;
+            height: 1200px;
+            background: linear-gradient(180deg, #f4f6f0 0%, #ffffff 45%, #eef2e8 100%);
+            border-radius: 26px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+            border: 3px solid var(--neon);
+        }
+
+        /* Cabeçalho */
+        .board-header {
+            background: radial-gradient(circle at 80% 20%, #1d2912 0%, #0b0b0b 70%);
+            color: #ffffff;
+            padding: 26px 32px 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            border-bottom: 4px solid var(--neon);
+        }
+
+        .header-logo-wrap {
+            width: 158px;
+            height: 158px;
+            border-radius: 50%;
+            padding: 5px;
+            background: linear-gradient(135deg, var(--neon), var(--neon-dark));
+            box-shadow: 0 0 28px rgba(166, 255, 0, 0.35);
+            flex-shrink: 0;
+        }
+
+        .header-logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            background: #0b0b0b;
+        }
+
+        .header-info {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-title {
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            line-height: 1.05;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .header-title span {
+            color: var(--neon);
+        }
+
+        .header-sub {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 3.5px;
+            color: #d6decb;
+            text-transform: uppercase;
+        }
+
+        .header-pill {
+            margin-top: 4px;
+            background: linear-gradient(90deg, var(--neon), #8de600);
+            color: #0b0b0b;
+            font-size: 17px;
+            font-weight: 900;
+            padding: 7px 24px;
+            border-radius: 999px;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 16px rgba(166, 255, 0, 0.3);
+        }
+
+        .header-nfc-title {
+            margin-top: 4px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .header-nfc-sub {
+            font-size: 14px;
+            color: #cfd6c6;
+            font-weight: 500;
+        }
+
+        .header-pillars {
+            margin-top: 4px;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 2.2px;
+            color: var(--neon);
+            text-transform: uppercase;
+        }
+
+        /* Conteúdo principal */
+        .board-body {
+            flex: 1;
+            padding: 20px 28px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Grid central: 2 colunas */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.48fr 1fr;
+            gap: 18px;
+            flex: 1;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* Banner Google */
+        .google-banner {
+            background: linear-gradient(135deg, #161a12 0%, #0b0b0b 100%);
+            border: 2.5px solid var(--neon);
+            border-radius: 16px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #ffffff;
+            box-shadow: 0 6px 18px rgba(11, 11, 11, 0.14);
+        }
+
+        .google-icon-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            flex-shrink: 0;
+        }
+
+        .google-icon-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .google-text {
+            flex: 1;
+            text-align: center;
+        }
+
+        .google-stars {
+            color: #fbbf24;
+            font-size: 18px;
+            letter-spacing: 3px;
+            line-height: 1;
+            margin-bottom: 3px;
+        }
+
+        .google-text h2 {
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        .google-text p {
+            font-size: 13px;
+            color: var(--neon);
+            font-weight: 600;
+        }
+
+        /* Grade 3x3 de canais */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 11px;
+            flex: 1;
+        }
+
+        .channel-card {
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            border-radius: 14px;
+            padding: 11px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .channel-icon {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .channel-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .channel-card h3 {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            line-height: 1.15;
+        }
+
+        .channel-card p {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            line-height: 1.2;
+            font-weight: 500;
+        }
+
+        /* Coluna direita: QR Code + NFC */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .qr-box {
+            background: linear-gradient(180deg, #161a12 0%, #0b0b0b 100%);
+            border: 2.5px solid var(--neon);
+            border-radius: 18px;
+            padding: 16px 16px 14px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            justify-content: space-between;
+            box-shadow: 0 8px 22px rgba(11, 11, 11, 0.16);
+        }
+
+        .qr-box-title {
+            font-size: 21px;
+            font-weight: 900;
+            color: var(--neon);
+            letter-spacing: 0.6px;
+        }
+
+        .qr-box-sub {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #d7dfd0;
+            letter-spacing: 0.4px;
+            margin-top: 2px;
+        }
+
+        .qr-frame {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 14px;
+            margin: 10px 0;
+            box-shadow: 0 0 0 3px rgba(166, 255, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #boardQrCode img,
+        #boardQrCode canvas {
+            display: block;
+            width: 196px !important;
+            height: 196px !important;
+        }
+
+        .qr-box-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.4px;
+        }
+
+        .nfc-box {
+            background: linear-gradient(135deg, #161a12 0%, #0b0b0b 100%);
+            border: 2.5px solid var(--neon);
+            border-radius: 18px;
+            padding: 16px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 8px;
+            box-shadow: 0 8px 22px rgba(11, 11, 11, 0.16);
+        }
+
+        .nfc-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .nfc-badge {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            border: 2.5px solid var(--neon);
+            background: rgba(166, 255, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nfc-text {
+            text-align: left;
+        }
+
+        .nfc-text .nfc-label {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .nfc-text .nfc-tag {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neon);
+            line-height: 1.1;
+        }
+
+        .nfc-sub {
+            font-size: 12px;
+            color: #d7dfd0;
+            font-weight: 600;
+        }
+
+        /* Faixa horizontal de destaque */
+        .portal-banner {
+            background: linear-gradient(90deg, #0b0b0b 0%, #1a2410 50%, #0b0b0b 100%);
+            border: 2.5px solid var(--neon);
+            border-radius: 16px;
+            padding: 12px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .portal-banner-title {
+            font-size: 17px;
+            font-weight: 900;
+            color: var(--neon);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .portal-banner-sub {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 2px;
+        }
+
+        /* 3 Benefícios inferiores */
+        .benefits-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .benefit-card {
+            background: #ffffff;
+            border: 1.5px solid var(--card-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .benefit-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #0b0b0b;
+            border: 2px solid var(--neon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .benefit-card h4 {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        .benefit-card p {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.25;
+            font-weight: 500;
+        }
+
+        /* Rodapé */
+        .board-footer {
+            background: linear-gradient(180deg, #13180f 0%, #0b0b0b 100%);
+            border-top: 4px solid var(--neon);
+            color: #ffffff;
+            text-align: center;
+            padding: 18px 24px 20px;
+        }
+
+        .board-footer-thanks {
+            font-size: 27px;
+            font-weight: 800;
+            font-style: italic;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .board-footer-brand {
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--neon);
+            text-transform: uppercase;
+        }
+
+        @page {
+            size: 900px 1200px;
+            margin: 0;
+        }
+
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
+            .toolbar {
+                display: none !important;
+            }
+            .board {
+                box-shadow: none;
+                border-radius: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="toolbar-url-group">
+            <label for="qrUrlInput">Link do QR Code:</label>
+            <input type="url" id="qrUrlInput" value="https://braz-fitness-connect.vercel.app/" placeholder="Cole aqui a URL do portal">
+        </div>
+        <div class="toolbar-actions">
+            <button type="button" class="btn-tool btn-print" onclick="window.print()">Imprimir / Salvar PDF</button>
+        </div>
+    </div>
+
+    <main class="board" id="board">
+        <!-- Cabeçalho -->
+        <header class="board-header">
+            <div class="header-logo-wrap">
+                <img src="assets/img/logo.jpeg" alt="Logo Academia Braz Fitness">
+            </div>
+            <div class="header-info">
+                <h1 class="header-title">ACADEMIA <span>BRAZ FITNESS</span></h1>
+                <p class="header-sub">MUSCULAÇÃO E TREINO</p>
+                <div class="header-pill">💪 TRANSFORME SEU CORPO</div>
+                <p class="header-nfc-title">NFC + QR CODE INTELIGENTE</p>
+                <p class="header-nfc-sub">Todos os seus links em um só lugar.</p>
+                <p class="header-pillars">SAÚDE • BEM-ESTAR • EVOLUÇÃO</p>
+            </div>
+        </header>
+
+        <section class="board-body">
+            <div class="main-grid">
+                <!-- Coluna Esquerda -->
+                <div class="left-column">
+                    <div class="google-banner">
+                        <div class="google-icon-circle">
+                            <img src="assets/img/logo-google.png" alt="Google">
+                        </div>
+                        <div class="google-text">
+                            <div class="google-stars">★★★★★</div>
+                            <h2>AVALIE-NOS NO GOOGLE</h2>
+                            <p>Sua opinião é muito importante para nós!</p>
+                        </div>
+                    </div>
+
+                    <div class="channels-grid">
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/whatsapp.svg" alt="WhatsApp"></div>
+                            <h3>WHATSAPP</h3>
+                            <p>Fale conosco agora</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/instagram.svg" alt="Instagram"></div>
+                            <h3>INSTAGRAM</h3>
+                            <p>Acompanhe nossas atualizações</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/localizacao.svg" alt="Localização"></div>
+                            <h3>LOCALIZAÇÃO</h3>
+                            <p>Veja onde estamos</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/pix.svg" alt="Pix"></div>
+                            <h3>PIX</h3>
+                            <p>Escaneie ou copie a chave</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/wifi.svg" alt="Wi-Fi Grátis"></div>
+                            <h3>WI-FI GRÁTIS</h3>
+                            <p>Conecte-se à rede</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/nossos-treinos.svg" alt="Nossos Treinos"></div>
+                            <h3>NOSSOS TREINOS</h3>
+                            <p>Musculação, funcional e mais</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/planos.svg" alt="Planos e Valores"></div>
+                            <h3>PLANOS E VALORES</h3>
+                            <p>Confira nossos planos</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/por-dentro.svg" alt="Por Dentro da Braz"></div>
+                            <h3>POR DENTRO DA BRAZ</h3>
+                            <p>Fotos e vídeos da academia</p>
+                        </div>
+                        <div class="channel-card">
+                            <div class="channel-icon"><img src="assets/img/depoimentos.svg" alt="Depoimentos"></div>
+                            <h3>DEPOIMENTOS</h3>
+                            <p>O que nossos alunos dizem</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita -->
+                <div class="right-column">
+                    <div class="qr-box">
+                        <div>
+                            <div class="qr-box-title">NOSSO QR CODE</div>
+                            <div class="qr-box-sub">ESCANEIE E ACESSE TODOS OS NOSSOS CANAIS</div>
+                        </div>
+                        <div class="qr-frame">
+                            <div id="boardQrCode"></div>
+                        </div>
+                        <div class="qr-box-footer">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect x="6" y="2" width="12" height="20" rx="2.5" stroke="#A6FF00" stroke-width="2"/>
+                                <circle cx="12" cy="18.5" r="1" fill="#A6FF00"/>
+                            </svg>
+                            <span>APONTE A CÂMERA DO SEU CELULAR</span>
+                        </div>
+                    </div>
+
+                    <div class="nfc-box">
+                        <div class="nfc-row">
+                            <div class="nfc-badge">
+                                <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
+                                    <path d="M10 24 C13.5 20.5 13.5 15.5 10 12" stroke="#A6FF00" stroke-width="2.6" stroke-linecap="round"/>
+                                    <path d="M15.5 27 C20.5 22 20.5 14 15.5 9" stroke="#A6FF00" stroke-width="2.6" stroke-linecap="round"/>
+                                    <path d="M21 30 C27.5 23.5 27.5 12.5 21 6" stroke="#A6FF00" stroke-width="2.6" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="nfc-text">
+                                <div class="nfc-label">APROXIME SEU<br>CELULAR AQUI</div>
+                                <div class="nfc-tag">(NFC)</div>
+                            </div>
+                        </div>
+                        <div class="nfc-sub">Toque e acesse rapidamente</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Faixa Central Inferior -->
+            <div class="portal-banner">
+                <div class="portal-banner-title">SEU OBJETIVO É A NOSSA MOTIVAÇÃO!</div>
+                <div class="portal-banner-sub">(21) 98722-0665 • Rua Guarani, nº 2334 – Piabetá, Magé/RJ</div>
+            </div>
+
+            <!-- 3 Benefícios -->
+            <div class="benefits-row">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M13 2 L4 14 H11 L10 22 L20 10 H13 L13 2 Z" fill="#A6FF00"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4>É RÁPIDO</h4>
+                        <p>Você encontra o que precisa em um toque.</p>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M7 11 V20 H4 V11 H7 Z M9 20 H17.5 C18.5 20 19.3 19.3 19.6 18.4 L21 13.4 C21.3 12.2 20.4 11 19.1 11 H14.5 L15.2 7.2 C15.3 6.5 14.9 5.8 14.2 5.6 L13.2 5.3 L9 10.5 V20 Z" fill="#A6FF00"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4>PRÁTICO</h4>
+                        <p>Todos os nossos canais em um só lugar.</p>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2 L4 5.5 V11.5 C4 16.8 7.4 21.6 12 23 C16.6 21.6 20 16.8 20 11.5 V5.5 L12 2 Z" stroke="#A6FF00" stroke-width="2.2" fill="none"/>
+                            <path d="M8.5 12.5 L11 15 L15.8 9.5" stroke="#A6FF00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4>SEGURO</h4>
+                        <p>Seus dados e atendimentos com total proteção.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rodapé -->
+        <footer class="board-footer">
+            <div class="board-footer-thanks">Obrigado pela sua visita!</div>
+            <div class="board-footer-brand">ACADEMIA BRAZ FITNESS</div>
+        </footer>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const qrContainer = document.getElementById('boardQrCode');
+        const qrInput = document.getElementById('qrUrlInput');
+
+        function renderBoardQR(url) {
+            if (!qrContainer || typeof QRCode === 'undefined') return;
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: url || 'https://braz-fitness-connect.vercel.app/',
+                width: 196,
+                height: 196,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        renderBoardQR(qrInput.value);
+        qrInput.addEventListener('input', () => {
+            renderBoardQR(qrInput.value.trim());
+        });
+    </script>
+</body>
+</html>

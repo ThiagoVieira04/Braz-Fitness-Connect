@@ -1,0 +1,21 @@
+{
+  "name": "Academia Braz Fitness",
+  "short_name": "Braz Fitness",
+  "description": "Academia, musculação e treino funcional",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b0b0b",
+  "icons": [
+    {
+      "src": "assets/img/logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "assets/img/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
