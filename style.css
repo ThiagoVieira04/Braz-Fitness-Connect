@@ -145,7 +145,7 @@ body {
     color: var(--accent-yellow);
     font-weight: 600;
     opacity: 0.85;
-    animation: phraseEntrance 0.6s ease-out 0.15s backwards;
+    animation: phraseEntrance 1s ease-out 0.2s backwards;
 }
 
 .logo {
@@ -184,7 +184,7 @@ body {
 }
 
 .brand-info {
-    animation: phraseEntrance 0.7s ease-out 0.35s backwards;
+    animation: phraseEntrance 1.2s ease-out 0.5s backwards;
 }
 
 .logo img {
