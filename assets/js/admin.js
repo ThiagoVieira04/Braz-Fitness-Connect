@@ -219,7 +219,7 @@ logoutBtn.addEventListener('click', async () => {
     } catch {
         // ignora falha de rede ao sair
     }
-    showLogin();
+    window.location.href = '/';
 });
 
 loadPlans().catch(() => showLogin());
