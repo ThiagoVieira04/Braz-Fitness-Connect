@@ -145,6 +145,7 @@ body {
     color: var(--accent-yellow);
     font-weight: 600;
     opacity: 0.85;
+    animation: phraseEntrance 0.6s ease-out 0.15s backwards;
 }
 
 .logo {
@@ -175,6 +176,15 @@ body {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     25% { transform: translateY(-4px) rotate(1deg); }
     75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+@keyframes phraseEntrance {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.brand-info {
+    animation: phraseEntrance 0.7s ease-out 0.35s backwards;
 }
 
 .logo img {
@@ -2092,6 +2102,11 @@ body.dark-theme .background-gradient {
     .logo {
         animation: none !important;
         opacity: 1 !important;
+    }
+
+    .digital-card-label,
+    .brand-info {
+        animation: none !important;
     }
 
     .catalog-track {
