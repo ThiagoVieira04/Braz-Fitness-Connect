@@ -7,7 +7,7 @@
    -------------------------------------------------------------------------- */
 
 const CONFIG = {
-    pixKey: '+5521988593392',
+    pixKey: '+5521987220665',
     whatsappPhone: '5521987220665',
     googleReviewUrl: 'https://g.page/r/CaYM7P8yGrWjEBE/review',
     instagramUrl: 'https://www.instagram.com/academiabrazfitness?dmpr=MTMzMW5pNTg3NGNo&utm_source=qr',
@@ -270,8 +270,8 @@ function renderServices() {
                 ${service.items.map(item => `
                     <li>
                         <span class="service-item-text">${item}</span>
-                        <a class="service-quote-btn" href="https://wa.me/5521987220665?text=${encodeURIComponent('Olá! Gostaria de um orçamento para: ' + item)}" target="_blank" rel="noopener noreferrer">
-                            <i class="fab fa-whatsapp"></i> Solicite um orçamento
+                        <a class="service-quote-btn" href="https://wa.me/5521987220665?text=${encodeURIComponent('Olá! Gostaria de mais informações em nossos treinos sobre: ' + item)}" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-whatsapp"></i> Saiba mais
                         </a>
                     </li>
                 `).join('')}
@@ -288,25 +288,50 @@ function renderServices() {
     });
 }
 
-function renderPlans() {
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+async function loadPlans() {
+    try {
+        const res = await fetch('data/plans.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) return data;
+    } catch (err) {
+        console.warn('Não foi possível carregar data/plans.json. Usando valores padrão.', err);
+    }
+    return PLANS;
+}
+
+async function renderPlans() {
     const list = document.getElementById('plansList');
     const header = document.getElementById('plansHeader');
     const body = document.getElementById('plansBody');
     const arrow = document.getElementById('plansArrow');
     if (!list || !header || !body) return;
 
-    PLANS.forEach(plan => {
+    const plans = await loadPlans();
+    plans.forEach(plan => {
         const card = document.createElement('div');
         card.className = 'plan-card';
+        const name = escapeHtml(plan.name);
+        const price = escapeHtml(plan.price);
+        const details = escapeHtml(plan.details);
         const whatsappText = encodeURIComponent(`Olá! Gostaria de mais informações sobre: ${plan.name} (${plan.price})`);
         card.innerHTML = `
             <div class="plan-info">
-                <span class="plan-name">${plan.name}</span>
-                ${plan.details ? `<span class="plan-meta${plan.isWarning ? ' plan-meta--warn' : ''}">${plan.details}</span>` : ''}
+                <span class="plan-name">${name}</span>
+                ${details ? `<span class="plan-meta${plan.isWarning ? ' plan-meta--warn' : ''}">${details}</span>` : ''}
             </div>
             <div class="plan-actions">
-                <span class="plan-price">${plan.price}</span>
-                <a class="service-quote-btn" href="https://wa.me/5521987220665?text=${whatsappText}" target="_blank" rel="noopener noreferrer" aria-label="Saiba mais sobre ${plan.name} pelo WhatsApp">
+                <span class="plan-price">${price}</span>
+                <a class="service-quote-btn" href="https://wa.me/5521987220665?text=${whatsappText}" target="_blank" rel="noopener noreferrer" aria-label="Saiba mais sobre ${name} pelo WhatsApp">
                     <i class="fab fa-whatsapp" aria-hidden="true"></i> Saiba mais
                 </a>
             </div>

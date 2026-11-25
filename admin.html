@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0b0b0b">
+    <title>Admin - Planos | Academia Braz Fitness</title>
+    <link rel="icon" type="image/jpeg" href="assets/img/logo.jpeg">
+    <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+    <main class="admin-shell">
+        <section class="admin-card" id="loginView">
+            <div class="admin-brand">
+                <img src="assets/img/logo.jpeg" alt="Academia Braz Fitness">
+                <div>
+                    <h1>Painel Admin</h1>
+                    <p>Planos e Valores</p>
+                </div>
+            </div>
+
+            <form id="loginForm">
+                <label class="field">
+                    <span>Usuário</span>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </label>
+                <label class="field">
+                    <span>Senha</span>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit" class="btn-primary" id="loginBtn">Entrar</button>
+                <p class="message error" id="loginError" hidden></p>
+            </form>
+        </section>
+
+        <section class="admin-card wide" id="editorView" hidden>
+            <header class="admin-header">
+                <div class="admin-brand">
+                    <img src="assets/img/logo.jpeg" alt="Academia Braz Fitness">
+                    <div>
+                        <h1>Planos e Valores</h1>
+                        <p>Edite os valores exibidos no site</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-ghost" id="logoutBtn">Sair</button>
+            </header>
+
+            <p class="hint">Altere os campos e clique em <strong>Salvar</strong>. As mudanças entram no ar em cerca de 10 segundos (novo deploy automático).</p>
+
+            <form id="plansForm">
+                <div id="plansEditor" class="plans-editor"></div>
+                <div class="actions">
+                    <button type="submit" class="btn-primary" id="saveBtn">Salvar alterações</button>
+                </div>
+            </form>
+
+            <p class="message" id="status" hidden></p>
+        </section>
+    </main>
+
+    <script src="assets/js/admin.js"></script>
+</body>
+</html>

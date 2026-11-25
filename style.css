@@ -1666,8 +1666,8 @@ body.high-contrast .bio-text .bio-lead {
     transition: var(--transition);
 }
 
-#themeToggle { top: 20px; right: 20px; }
-#contrastToggle { top: 70px; right: 20px; }
+#themeToggle { top: 70px; right: 20px; }
+#contrastToggle { top: 120px; right: 20px; }
 
 .a11y-toolbar-btn:hover {
     transform: scale(1.1) rotate(15deg);
@@ -2313,6 +2313,70 @@ body.viewer-open #vlibras-access-wrapper {
 }
 
 /* --------------------------------------------------------------------------
+   26h. ADMIN FAB (acesso discreto ao painel)
+   -------------------------------------------------------------------------- */
+
+.admin-fab {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--white);
+    color: var(--gray-dark);
+    border: 1px solid var(--gray-medium);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    font-size: 18px;
+    opacity: 0.85;
+    z-index: 999;
+    transition: var(--transition);
+}
+
+.admin-fab:hover,
+.admin-fab:focus-visible {
+    opacity: 1;
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    outline: none;
+}
+
+.admin-fab:active {
+    transform: scale(0.95);
+}
+
+.admin-fab:focus-visible {
+    box-shadow: 0 0 0 3px rgba(166, 255, 0, 0.5);
+}
+
+body.high-contrast .admin-fab {
+    background: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
+    opacity: 1;
+}
+
+body.high-contrast .admin-fab:hover,
+body.high-contrast .admin-fab:focus-visible {
+    background: #ffffff;
+    color: #000000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-fab {
+        transition: none;
+    }
+    .admin-fab:hover,
+    .admin-fab:focus-visible {
+        transform: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
    27. PRINT
    -------------------------------------------------------------------------- */
 
@@ -2322,4 +2386,5 @@ body.viewer-open #vlibras-access-wrapper {
     .container { box-shadow: none; max-width: 100%; }
     .link-button { page-break-inside: avoid; }
     .footer { border-top: 2px solid var(--gray-dark); }
+    .admin-fab { display: none !important; }
 }

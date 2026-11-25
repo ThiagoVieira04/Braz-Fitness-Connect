@@ -69,6 +69,15 @@
                     </div>
                 </button>
 
+                <div class="services-header" id="plansHeader" role="button" tabindex="0" aria-expanded="false" aria-controls="plansBody">
+                    <img src="assets/img/planos.svg" alt="" class="services-header-icon" aria-hidden="true">
+                    <h2 class="services-title">Planos e Valores</h2>
+                    <i class="fas fa-chevron-down services-arrow" id="plansArrow" aria-hidden="true"></i>
+                </div>
+                <div class="services-body" id="plansBody" role="region" aria-label="Planos e valores">
+                    <div class="services-list plans-list" id="plansList"></div>
+                </div>
+
                 <button class="link-button whatsapp-btn" data-action="open-link" data-link="https://wa.me/5521987220665?text=Olá!%20Gostaria%20de%20mais%20informações." role="listitem" aria-label="WhatsApp - Fale conosco agora">
                     <div class="button-icon"><img src="assets/img/whatsapp.svg" alt="" class="button-icon-img" aria-hidden="true"></div>
                     <div class="button-content">
@@ -110,15 +119,6 @@
                     <div class="services-list" id="servicesList"></div>
                 </div>
 
-                <div class="services-header" id="plansHeader" role="button" tabindex="0" aria-expanded="false" aria-controls="plansBody">
-                    <img src="assets/img/planos.svg" alt="" class="services-header-icon" aria-hidden="true">
-                    <h2 class="services-title">Planos e Valores</h2>
-                    <i class="fas fa-chevron-down services-arrow" id="plansArrow" aria-hidden="true"></i>
-                </div>
-                <div class="services-body" id="plansBody" role="region" aria-label="Planos e valores">
-                    <div class="services-list plans-list" id="plansList"></div>
-                </div>
-
                 <div class="catalog-header" id="catalogHeader" role="button" tabindex="0" aria-expanded="false" aria-controls="catalogBody">
                     <img src="assets/img/por-dentro.svg" alt="" class="catalog-header-icon" aria-hidden="true">
                     <h2 class="catalog-title">Por Dentro da Braz</h2>
@@ -133,12 +133,12 @@
                     </div>
                 </div>
 
-                <div class="testimonials-header" id="testimonialsHeader" role="button" tabindex="0" aria-expanded="false" aria-controls="testimonialsBody">
+                <div class="testimonials-header" id="testimonialsHeader" role="button" tabindex="0" aria-expanded="false" aria-controls="testimonialsBody" style="display:none;">
                     <img src="assets/img/depoimentos.svg" alt="" class="testimonials-header-icon" aria-hidden="true">
                     <h2 class="testimonials-title">Depoimentos</h2>
                     <i class="fas fa-chevron-down testimonials-arrow" id="testimonialsArrow" aria-hidden="true"></i>
                 </div>
-                <div class="testimonials-body" id="testimonialsBody" role="region" aria-label="Vídeos de depoimentos">
+                <div class="testimonials-body" id="testimonialsBody" role="region" aria-label="Vídeos de depoimentos" style="display:none;">
                     <div class="catalog-carousel testimonials-carousel" id="testimonialsCarousel" aria-label="Carrossel de depoimentos">
                         <button class="catalog-arrow-btn catalog-prev" id="testimonialsPrev" aria-label="Depoimento anterior"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
                         <div class="catalog-track" id="testimonialsTrack" aria-live="polite"></div>
@@ -184,11 +184,11 @@
             <div class="pix-key-section">
                 <p class="pix-key-label">Chave Pix (Celular):</p>
                 <div class="pix-key-display">
-                    <span id="pixKeyDisplay">+5521988593392</span>
+                    <span id="pixKeyDisplay">+5521987220665</span>
                     <button class="copy-btn" id="copyPixBtn"><i class="fas fa-copy"></i> Copiar</button>
                 </div>
-                <p class="pix-bank">Banco: Nubank</p>
-                <p class="pix-owner" id="pixOwner">Sidlaine Thomaz Nascimento</p>
+                <p class="pix-bank">Banco: PagBank</p>
+                <p class="pix-owner" id="pixOwner">JANAÍNA MARIA DA SILVA</p>
             </div>
             <p class="pix-info">
                 <i class="fas fa-info-circle"></i>
@@ -303,5 +303,9 @@
     <script>
         new window.VLibras.Widget('https://vlibras.gov.br/app');
     </script>
+
+    <a href="/admin" class="admin-fab" aria-label="Acessar painel administrativo" title="Painel administrativo">
+        <i class="fas fa-gear" aria-hidden="true"></i>
+    </a>
 </body>
 </html>

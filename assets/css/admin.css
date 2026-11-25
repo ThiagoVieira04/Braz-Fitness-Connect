@@ -1,0 +1,262 @@
+:root {
+    --bg: #0b0b0b;
+    --surface: #151713;
+    --surface-2: #1d2019;
+    --border: #2c3226;
+    --neon: #a6ff00;
+    --neon-dark: #7cbf00;
+    --text: #f4f6f0;
+    --muted: #a9b1a0;
+    --danger: #ff5c5c;
+    --success: #a6ff00;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: radial-gradient(circle at 80% 0%, #1d2912 0%, #0b0b0b 60%);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+.admin-shell {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.admin-card {
+    background: linear-gradient(180deg, var(--surface) 0%, #101210 100%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.admin-card[hidden] {
+    display: none;
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.admin-brand img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--neon);
+    background: var(--bg);
+}
+
+.admin-brand h1 {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.admin-brand p {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.admin-header .admin-brand {
+    margin-bottom: 0;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.field span {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.field input {
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input:focus {
+    border-color: var(--neon);
+    box-shadow: 0 0 0 3px rgba(166, 255, 0, 0.15);
+}
+
+.field.check {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.field.check input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--neon);
+}
+
+.field.check span {
+    font-size: 12.5px;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.btn-primary,
+.btn-ghost {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, var(--neon), #8de600);
+    color: #0b0b0b;
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-ghost:hover:not(:disabled) {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--neon);
+    border: 1px solid var(--border);
+}
+
+#loginForm .btn-primary {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 18px 0;
+}
+
+.plans-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.plan-row {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    background: rgba(29, 32, 25, 0.6);
+}
+
+.plan-row legend {
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--neon);
+}
+
+.plan-row .field:last-child {
+    margin-bottom: 0;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.message {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.message[hidden] {
+    display: none;
+}
+
+.message.error {
+    background: rgba(255, 92, 92, 0.12);
+    border: 1px solid rgba(255, 92, 92, 0.4);
+    color: var(--danger);
+}
+
+.message.success {
+    background: rgba(166, 255, 0, 0.1);
+    border: 1px solid rgba(166, 255, 0, 0.4);
+    color: var(--success);
+}
+
+@media (max-width: 560px) {
+    .admin-card {
+        padding: 20px;
+    }
+
+    .admin-brand h1 {
+        font-size: 18px;
+    }
+
+    .actions {
+        justify-content: stretch;
+    }
+
+    .actions .btn-primary {
+        width: 100%;
+    }
+}

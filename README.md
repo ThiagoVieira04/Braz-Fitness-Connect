@@ -111,6 +111,23 @@ Salve, recarregue e pronto.
 
 ---
 
+## Admin (Planos e Valores)
+
+A página `/admin` permite editar os valores dos planos exibidos no site. Ao salvar, o arquivo `data/plans.json` é atualizado via commit no GitHub e a Vercel refaz o deploy automaticamente (~10s).
+
+Configure as variáveis de ambiente no painel da Vercel:
+
+| Variável | Descrição |
+|----------|-----------|
+| `ADMIN_USER` | Usuário do admin |
+| `ADMIN_PASSWORD` | Senha do admin |
+| `SESSION_SECRET` | String aleatória longa para assinar a sessão |
+| `GITHUB_TOKEN` | PAT fine-grained com **Contents: Read and write** neste repositório |
+| `GITHUB_REPO` | `ThiagoVieira04/Braz-Fitness-Connect` |
+| `GITHUB_BRANCH` | `main` |
+
+---
+
 ## Tecnologias
 
 - HTML5 / CSS3 / JavaScript (sem framework)
