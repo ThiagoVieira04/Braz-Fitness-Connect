@@ -51,29 +51,13 @@ function createField(labelText, fieldName, value) {
     return label;
 }
 
-function createWarningField(checked) {
-    const label = document.createElement('label');
-    label.className = 'field check';
-
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.dataset.field = 'isWarning';
-    input.checked = Boolean(checked);
-
-    const span = document.createElement('span');
-    span.textContent = 'Destacar como aviso';
-
-    label.appendChild(input);
-    label.appendChild(span);
-    return label;
-}
-
 function renderEditor(plans) {
     plansEditor.innerHTML = '';
 
     plans.forEach((plan, index) => {
         const row = document.createElement('fieldset');
         row.className = 'plan-row';
+        row.dataset.isWarning = plan.isWarning ? 'true' : 'false';
 
         const legend = document.createElement('legend');
         legend.textContent = `Plano ${index + 1}`;
@@ -82,7 +66,6 @@ function renderEditor(plans) {
         row.appendChild(createField('Nome', 'name', plan.name));
         row.appendChild(createField('Preço', 'price', plan.price));
         row.appendChild(createField('Detalhes (horários, observações)', 'details', plan.details));
-        row.appendChild(createWarningField(plan.isWarning));
 
         plansEditor.appendChild(row);
     });
@@ -93,7 +76,7 @@ function collectPlans() {
         name: row.querySelector('[data-field="name"]').value,
         price: row.querySelector('[data-field="price"]').value,
         details: row.querySelector('[data-field="details"]').value,
-        isWarning: row.querySelector('[data-field="isWarning"]').checked
+        isWarning: row.dataset.isWarning === 'true'
     }));
 }
 
