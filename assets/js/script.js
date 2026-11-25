@@ -302,7 +302,7 @@ async function loadPlans() {
         const res = await fetch('data/plans.json', { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (Array.isArray(data) && data.length) return data;
+        if (Array.isArray(data)) return data;
     } catch (err) {
         console.warn('Não foi possível carregar data/plans.json. Usando valores padrão.', err);
     }
@@ -338,6 +338,13 @@ async function renderPlans() {
         `;
         list.appendChild(card);
     });
+
+    if (plans.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'plan-empty';
+        empty.textContent = 'Nenhum plano cadastrado no momento.';
+        list.appendChild(empty);
+    }
 
     header.addEventListener('click', () => {
         body.classList.toggle('open');

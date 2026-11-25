@@ -6,6 +6,7 @@ const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const plansForm = document.getElementById('plansForm');
 const plansEditor = document.getElementById('plansEditor');
+const addPlanBtn = document.getElementById('addPlanBtn');
 const saveBtn = document.getElementById('saveBtn');
 const statusEl = document.getElementById('status');
 
@@ -34,7 +35,7 @@ function showEditor() {
     editorView.hidden = false;
 }
 
-function createField(labelText, fieldName, value) {
+function createField(labelText, fieldName, value, required = false) {
     const label = document.createElement('label');
     label.className = 'field';
 
@@ -45,30 +46,69 @@ function createField(labelText, fieldName, value) {
     input.type = 'text';
     input.dataset.field = fieldName;
     input.value = value == null ? '' : String(value);
+    input.required = required;
 
     label.appendChild(span);
     label.appendChild(input);
     return label;
 }
 
+function renumberPlans() {
+    const rows = plansEditor.querySelectorAll('.plan-row');
+    rows.forEach((row, index) => {
+        const title = row.querySelector('.plan-row-title');
+        if (title) title.textContent = `Plano ${index + 1}`;
+        const removeBtn = row.querySelector('.btn-remove');
+        if (removeBtn) removeBtn.setAttribute('aria-label', `Excluir plano ${index + 1}`);
+    });
+}
+
+function updateAddButton() {
+    if (!addPlanBtn) return;
+    const count = plansEditor.querySelectorAll('.plan-row').length;
+    addPlanBtn.disabled = count >= 50;
+}
+
+function createPlanRow(plan) {
+    const data = plan || {};
+    const row = document.createElement('div');
+    row.className = 'plan-row';
+    row.dataset.isWarning = data.isWarning ? 'true' : 'false';
+
+    const head = document.createElement('div');
+    head.className = 'plan-row-head';
+
+    const title = document.createElement('span');
+    title.className = 'plan-row-title';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn-remove';
+    removeBtn.textContent = 'Excluir';
+    removeBtn.addEventListener('click', () => {
+        if (window.confirm('Excluir este plano?')) {
+            row.remove();
+            renumberPlans();
+            updateAddButton();
+        }
+    });
+
+    head.appendChild(title);
+    head.appendChild(removeBtn);
+    row.appendChild(head);
+
+    row.appendChild(createField('Nome', 'name', data.name, true));
+    row.appendChild(createField('Preço', 'price', data.price));
+    row.appendChild(createField('Detalhes (horários, observações)', 'details', data.details));
+
+    return row;
+}
+
 function renderEditor(plans) {
     plansEditor.innerHTML = '';
-
-    plans.forEach((plan, index) => {
-        const row = document.createElement('fieldset');
-        row.className = 'plan-row';
-        row.dataset.isWarning = plan.isWarning ? 'true' : 'false';
-
-        const legend = document.createElement('legend');
-        legend.textContent = `Plano ${index + 1}`;
-        row.appendChild(legend);
-
-        row.appendChild(createField('Nome', 'name', plan.name));
-        row.appendChild(createField('Preço', 'price', plan.price));
-        row.appendChild(createField('Detalhes (horários, observações)', 'details', plan.details));
-
-        plansEditor.appendChild(row);
-    });
+    plans.forEach(plan => plansEditor.appendChild(createPlanRow(plan)));
+    renumberPlans();
+    updateAddButton();
 }
 
 function collectPlans() {
@@ -78,6 +118,17 @@ function collectPlans() {
         details: row.querySelector('[data-field="details"]').value,
         isWarning: row.dataset.isWarning === 'true'
     }));
+}
+
+if (addPlanBtn) {
+    addPlanBtn.addEventListener('click', () => {
+        const row = createPlanRow({ name: '', price: '', details: '', isWarning: false });
+        plansEditor.appendChild(row);
+        renumberPlans();
+        updateAddButton();
+        const nameInput = row.querySelector('[data-field="name"]');
+        if (nameInput) nameInput.focus();
+    });
 }
 
 async function loadPlans() {

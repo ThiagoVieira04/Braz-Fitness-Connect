@@ -47,7 +47,7 @@ function githubError(status, context) {
 }
 
 function validatePlans(plans) {
-    if (!Array.isArray(plans) || plans.length === 0 || plans.length > 50) return false;
+    if (!Array.isArray(plans) || plans.length > 50) return false;
     return plans.every(plan => plan
         && typeof plan === 'object'
         && typeof plan.name === 'string' && plan.name.trim().length > 0 && plan.name.length <= 120
