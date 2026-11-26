@@ -199,9 +199,25 @@ function moveMediaRow(row, direction) {
 
     if (currentIndex === -1 || targetIndex < 0 || targetIndex >= rows.length) return;
 
-    [rows[currentIndex], rows[targetIndex]] = [rows[targetIndex], rows[currentIndex]];
-    rows.forEach(mediaRow => mediaEditor.appendChild(mediaRow));
+    const viewportTop = row.getBoundingClientRect().top;
+
+    if (direction < 0) {
+        mediaEditor.insertBefore(row, rows[targetIndex]);
+    } else {
+        const next = rows[targetIndex].nextElementSibling;
+        if (next) {
+            mediaEditor.insertBefore(row, next);
+        } else {
+            mediaEditor.appendChild(row);
+        }
+    }
+
     renumberMedia();
+
+    const viewportTopAfterMove = row.getBoundingClientRect().top;
+    window.scrollBy({
+        top: viewportTopAfterMove - viewportTop
+    });
 }
 
 function updateMediaRow(row) {
