@@ -21,18 +21,9 @@ const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 const MAX_MEDIA_ITEMS = 100;
 
 const MEDIA_TYPES = [
-    { value: 'video', label: 'Vídeo (arquivo ou link direto)' },
-    { value: 'image', label: 'Imagem' },
-    { value: 'youtube', label: 'YouTube' },
-    { value: 'link', label: 'Link externo (Instagram, etc.)' }
+    { value: 'video', label: 'Vídeo' },
+    { value: 'image', label: 'Imagem' }
 ];
-
-const SRC_PLACEHOLDERS = {
-    video: 'https://.../video.mp4 ou assets/media/videos/video.mp4',
-    image: 'https://.../foto.jpg ou assets/media/imagens/foto.jpg',
-    youtube: 'https://www.youtube.com/watch?v=... ou https://youtu.be/...',
-    link: 'https://www.instagram.com/reel/...'
-};
 
 function setMessage(element, text, type) {
     if (!element) return;
@@ -206,15 +197,16 @@ function updateMediaRow(row) {
     row.dataset.type = type;
 
     const srcInput = row.querySelector('[data-field="src"]');
-    if (srcInput) srcInput.placeholder = SRC_PLACEHOLDERS[type] || '';
-
-    const uploadField = row.querySelector('[data-role="upload-field"]');
-    const titleField = row.querySelector('[data-role="title-field"]');
-    const posterField = row.querySelector('[data-role="poster-field"]');
-
-    if (uploadField) uploadField.hidden = type !== 'video' && type !== 'image';
-    if (titleField) titleField.hidden = type !== 'youtube' && type !== 'link';
-    if (posterField) posterField.hidden = type !== 'link';
+    const fileLabel = row.querySelector('[data-role="file-label"]');
+    if (fileLabel) {
+        const src = srcInput ? srcInput.value.trim() : '';
+        if (src) {
+            const name = src.split('/').pop().split('?')[0];
+            fileLabel.textContent = `Arquivo atual: ${name}`;
+        } else {
+            fileLabel.textContent = 'Nenhum arquivo enviado';
+        }
+    }
 }
 
 function createMediaRow(item) {
@@ -275,27 +267,25 @@ function createMediaRow(item) {
     head.appendChild(actions);
     row.appendChild(head);
 
-    const typeSelect = createSelect('Tipo', 'type', MEDIA_TYPES, data.type);
+    const safeType = data.type === 'image' ? 'image' : 'video';
+    const typeSelect = createSelect('Tipo', 'type', MEDIA_TYPES, safeType);
     typeSelect.querySelector('select').addEventListener('change', () => updateMediaRow(row));
     row.appendChild(typeSelect);
 
-    const srcLabel = document.createElement('label');
-    srcLabel.className = 'field';
-    const srcSpan = document.createElement('span');
-    srcSpan.textContent = 'URL / link';
     const srcInput = document.createElement('input');
-    srcInput.type = 'text';
+    srcInput.type = 'hidden';
     srcInput.dataset.field = 'src';
     srcInput.value = data.src || '';
-    srcLabel.appendChild(srcSpan);
-    srcLabel.appendChild(srcInput);
-    row.appendChild(srcLabel);
+    row.appendChild(srcInput);
 
     const uploadField = document.createElement('div');
     uploadField.className = 'field';
     uploadField.dataset.role = 'upload-field';
     const uploadSpan = document.createElement('span');
-    uploadSpan.textContent = 'Enviar arquivo';
+    uploadSpan.textContent = 'Arquivo de mídia';
+    const fileLabel = document.createElement('small');
+    fileLabel.className = 'media-upload-status';
+    fileLabel.dataset.role = 'file-label';
     const uploadRow = document.createElement('div');
     uploadRow.className = 'media-upload-row';
     const fileInput = document.createElement('input');
@@ -308,6 +298,7 @@ function createMediaRow(item) {
     uploadRow.appendChild(fileInput);
     uploadRow.appendChild(uploadStatus);
     uploadField.appendChild(uploadSpan);
+    uploadField.appendChild(fileLabel);
     uploadField.appendChild(uploadRow);
     row.appendChild(uploadField);
 
@@ -315,32 +306,6 @@ function createMediaRow(item) {
         const file = fileInput.files && fileInput.files[0];
         if (file) handleFileUpload(row, file);
     });
-
-    const titleField = document.createElement('label');
-    titleField.className = 'field';
-    titleField.dataset.role = 'title-field';
-    const titleSpan = document.createElement('span');
-    titleSpan.textContent = 'Título (opcional)';
-    const titleInput = document.createElement('input');
-    titleInput.type = 'text';
-    titleInput.dataset.field = 'title';
-    titleInput.value = data.title || '';
-    titleField.appendChild(titleSpan);
-    titleField.appendChild(titleInput);
-    row.appendChild(titleField);
-
-    const posterField = document.createElement('label');
-    posterField.className = 'field';
-    posterField.dataset.role = 'poster-field';
-    const posterSpan = document.createElement('span');
-    posterSpan.textContent = 'Imagem de capa (opcional, URL)';
-    const posterInput = document.createElement('input');
-    posterInput.type = 'text';
-    posterInput.dataset.field = 'poster';
-    posterInput.value = data.poster || '';
-    posterField.appendChild(posterSpan);
-    posterField.appendChild(posterInput);
-    row.appendChild(posterField);
 
     updateMediaRow(row);
     return row;
@@ -387,22 +352,10 @@ function renderMediaEditor(items) {
 }
 
 function collectMedia() {
-    return Array.from(mediaEditor.querySelectorAll('.media-row')).map(row => {
-        const type = row.querySelector('[data-field="type"]').value;
-        const item = {
-            type,
-            src: row.querySelector('[data-field="src"]').value.trim()
-        };
-        if (type === 'youtube' || type === 'link') {
-            const title = row.querySelector('[data-field="title"]').value.trim();
-            if (title) item.title = title;
-        }
-        if (type === 'link') {
-            const poster = row.querySelector('[data-field="poster"]').value.trim();
-            if (poster) item.poster = poster;
-        }
-        return item;
-    });
+    return Array.from(mediaEditor.querySelectorAll('.media-row')).map(row => ({
+        type: row.querySelector('[data-field="type"]').value,
+        src: row.querySelector('[data-field="src"]').value.trim()
+    }));
 }
 
 /* --------------------------------------------------------------------------
@@ -555,7 +508,7 @@ mediaForm.addEventListener('submit', async event => {
 
     const items = collectMedia();
     if (items.some(item => !item.src)) {
-        setMessage(mediaStatusEl, 'Preencha a URL/link de todas as mídias ou remova as que estão vazias.', 'error');
+        setMessage(mediaStatusEl, 'Envie um arquivo para todas as mídias ou remova as que estão vazias.', 'error');
         return;
     }
 

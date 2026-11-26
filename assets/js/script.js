@@ -356,7 +356,7 @@ function getYoutubeThumbnail(id) {
 
 function normalizeMediaItem(item) {
     if (!item || typeof item !== 'object') return null;
-    const type = ['video', 'image', 'youtube', 'link'].includes(item.type) ? item.type : null;
+    const type = ['video', 'image'].includes(item.type) ? item.type : null;
     if (!type || !isValidMediaUrl(item.src)) return null;
     if (type === 'youtube' && (!isYoutubeUrl(item.src) || !getYoutubeId(item.src))) return null;
 

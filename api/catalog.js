@@ -2,7 +2,7 @@ import { getSession } from '../lib/session.js';
 
 const FILE_PATH = 'data/catalog.json';
 const MAX_ITEMS = 100;
-const ALLOWED_TYPES = new Set(['video', 'image', 'youtube', 'link']);
+const ALLOWED_TYPES = new Set(['video', 'image']);
 
 function githubHeaders() {
     return {
@@ -63,24 +63,14 @@ function parseHttpUrl(value) {
     }
 }
 
-function isYoutubeUrl(value) {
+function isBlobStorageUrl(value) {
     const url = parseHttpUrl(value);
-    if (!url) return false;
-    const host = url.hostname.toLowerCase().replace(/^www\./, '');
-    return host === 'youtube.com'
-        || host === 'm.youtube.com'
-        || host === 'youtu.be'
-        || host === 'youtube-nocookie.com';
+    if (!url || url.protocol !== 'https:') return false;
+    return url.hostname.toLowerCase().endsWith('.blob.vercel-storage.com');
 }
 
 function isValidSrc(type, value) {
-    if (type === 'youtube') return isYoutubeUrl(value);
-    if (isRelativeAsset(value)) return true;
-    return Boolean(parseHttpUrl(value));
-}
-
-function isValidPoster(value) {
-    return isRelativeAsset(value) || Boolean(parseHttpUrl(value));
+    return isRelativeAsset(value) || isBlobStorageUrl(value);
 }
 
 function isValidItem(item) {
@@ -90,14 +80,6 @@ function isValidItem(item) {
     const src = item.src.trim();
     if (!src || src.length > 2048) return false;
     if (!isValidSrc(item.type, src)) return false;
-    if (item.poster != null) {
-        if (typeof item.poster !== 'string') return false;
-        const poster = item.poster.trim();
-        if (poster.length > 2048 || !isValidPoster(poster)) return false;
-    }
-    if (item.title != null) {
-        if (typeof item.title !== 'string' || item.title.length > 120) return false;
-    }
     return true;
 }
 
@@ -107,15 +89,10 @@ function validateCatalog(items) {
 }
 
 function normalizeCatalog(items) {
-    return items.map(item => {
-        const normalized = {
-            type: item.type,
-            src: item.src.trim()
-        };
-        if (item.poster != null && item.poster.trim()) normalized.poster = item.poster.trim();
-        if (item.title != null && item.title.trim()) normalized.title = item.title.trim();
-        return normalized;
-    });
+    return items.map(item => ({
+        type: item.type,
+        src: item.src.trim()
+    }));
 }
 
 async function fetchCurrentFile() {
