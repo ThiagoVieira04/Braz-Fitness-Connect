@@ -192,6 +192,18 @@ function renumberMedia() {
     if (addMediaBtn) addMediaBtn.disabled = rows.length >= MAX_MEDIA_ITEMS;
 }
 
+function moveMediaRow(row, direction) {
+    const rows = Array.from(mediaEditor.querySelectorAll('.media-row'));
+    const currentIndex = rows.indexOf(row);
+    const targetIndex = currentIndex + direction;
+
+    if (currentIndex === -1 || targetIndex < 0 || targetIndex >= rows.length) return;
+
+    [rows[currentIndex], rows[targetIndex]] = [rows[targetIndex], rows[currentIndex]];
+    rows.forEach(mediaRow => mediaEditor.appendChild(mediaRow));
+    renumberMedia();
+}
+
 function updateMediaRow(row) {
     const type = row.querySelector('[data-field="type"]').value;
     row.dataset.type = type;
@@ -229,11 +241,7 @@ function createMediaRow(item) {
     upBtn.dataset.move = 'up';
     upBtn.innerHTML = '<i class="fas fa-arrow-up" aria-hidden="true"></i>';
     upBtn.addEventListener('click', () => {
-        const prev = row.previousElementSibling;
-        if (prev) {
-            mediaEditor.insertBefore(row, prev);
-            renumberMedia();
-        }
+        moveMediaRow(row, -1);
     });
 
     const downBtn = document.createElement('button');
@@ -242,11 +250,7 @@ function createMediaRow(item) {
     downBtn.dataset.move = 'down';
     downBtn.innerHTML = '<i class="fas fa-arrow-down" aria-hidden="true"></i>';
     downBtn.addEventListener('click', () => {
-        const next = row.nextElementSibling;
-        if (next) {
-            mediaEditor.insertBefore(next, row);
-            renumberMedia();
-        }
+        moveMediaRow(row, 1);
     });
 
     const removeBtn = document.createElement('button');
