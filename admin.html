@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0b0b0b">
-    <title>Admin - Planos | Academia Braz Fitness</title>
+    <title>Admin | Academia Braz Fitness</title>
     <link rel="icon" type="image/jpeg" href="assets/img/logo.jpeg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/admin.css">
 </head>
 <body>
@@ -16,7 +17,7 @@
                 <img src="assets/img/logo.jpeg" alt="Academia Braz Fitness">
                 <div>
                     <h1>Painel Admin</h1>
-                    <p>Planos e Valores</p>
+                    <p>Planos e mídias</p>
                 </div>
             </div>
 
@@ -39,27 +40,48 @@
                 <div class="admin-brand">
                     <img src="assets/img/logo.jpeg" alt="Academia Braz Fitness">
                     <div>
-                        <h1>Planos e Valores</h1>
-                        <p>Edite os valores exibidos no site</p>
+                        <h1>Painel de Conteúdo</h1>
+                        <p>Planos e mídias do site</p>
                     </div>
                 </div>
                 <button type="button" class="btn-ghost" id="logoutBtn">Sair</button>
             </header>
 
-            <p class="hint">Altere os campos e clique em <strong>Salvar</strong>. As mudanças entram no ar em cerca de 10 segundos (novo deploy automático).</p>
+            <nav class="admin-tabs" aria-label="Seções do painel">
+                <button type="button" class="admin-tab active" id="plansTab" data-tab="plans" aria-controls="plansPanel" aria-selected="true">Planos e Valores</button>
+                <button type="button" class="admin-tab" id="mediaTab" data-tab="media" aria-controls="mediaPanel" aria-selected="false">Por Dentro da Braz</button>
+            </nav>
 
-            <form id="plansForm">
-                <div id="plansEditor" class="plans-editor"></div>
-                <button type="button" class="btn-add" id="addPlanBtn">+ Adicionar plano</button>
-                <div class="actions">
-                    <button type="submit" class="btn-primary" id="saveBtn">Salvar alterações</button>
-                </div>
-            </form>
+            <div class="admin-panel" id="plansPanel">
+                <p class="hint">Altere os campos e clique em <strong>Salvar</strong>. As mudanças entram no ar em cerca de 10 segundos (novo deploy automático).</p>
 
-            <p class="message" id="status" hidden></p>
+                <form id="plansForm">
+                    <div id="plansEditor" class="plans-editor"></div>
+                    <button type="button" class="btn-add" id="addPlanBtn">+ Adicionar plano</button>
+                    <div class="actions">
+                        <button type="submit" class="btn-primary" id="saveBtn">Salvar alterações</button>
+                    </div>
+                </form>
+
+                <p class="message" id="status" hidden></p>
+            </div>
+
+            <div class="admin-panel" id="mediaPanel" hidden>
+                <p class="hint">Adicione vídeos e imagens ao carrossel <strong>Por Dentro da Braz</strong>. Cole um link (YouTube, Instagram, arquivo .mp4) ou envie um arquivo. Depois de adicionar, clique em <strong>Salvar mídias</strong> — as mudanças entram no ar em cerca de 10 segundos.</p>
+
+                <form id="mediaForm">
+                    <div id="mediaEditor" class="media-editor"></div>
+                    <button type="button" class="btn-add" id="addMediaBtn">+ Adicionar mídia</button>
+                    <div class="actions">
+                        <button type="submit" class="btn-primary" id="saveMediaBtn">Salvar mídias</button>
+                    </div>
+                </form>
+
+                <p class="message" id="mediaStatus" hidden></p>
+            </div>
         </section>
     </main>
 
-    <script src="assets/js/admin.js"></script>
+    <script type="module" src="assets/js/admin.js"></script>
 </body>
 </html>

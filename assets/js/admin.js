@@ -1,3 +1,5 @@
+import { upload } from './vendor/vercel-blob-client.mjs';
+
 const loginView = document.getElementById('loginView');
 const editorView = document.getElementById('editorView');
 const loginForm = document.getElementById('loginForm');
@@ -9,6 +11,28 @@ const plansEditor = document.getElementById('plansEditor');
 const addPlanBtn = document.getElementById('addPlanBtn');
 const saveBtn = document.getElementById('saveBtn');
 const statusEl = document.getElementById('status');
+const mediaForm = document.getElementById('mediaForm');
+const mediaEditor = document.getElementById('mediaEditor');
+const addMediaBtn = document.getElementById('addMediaBtn');
+const saveMediaBtn = document.getElementById('saveMediaBtn');
+const mediaStatusEl = document.getElementById('mediaStatus');
+
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+const MAX_MEDIA_ITEMS = 100;
+
+const MEDIA_TYPES = [
+    { value: 'video', label: 'Vídeo (arquivo ou link direto)' },
+    { value: 'image', label: 'Imagem' },
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'link', label: 'Link externo (Instagram, etc.)' }
+];
+
+const SRC_PLACEHOLDERS = {
+    video: 'https://.../video.mp4 ou assets/media/videos/video.mp4',
+    image: 'https://.../foto.jpg ou assets/media/imagens/foto.jpg',
+    youtube: 'https://www.youtube.com/watch?v=... ou https://youtu.be/...',
+    link: 'https://www.instagram.com/reel/...'
+};
 
 function setMessage(element, text, type) {
     if (!element) return;
@@ -34,6 +58,22 @@ function showEditor() {
     loginView.hidden = true;
     editorView.hidden = false;
 }
+
+function activateTab(name) {
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        const active = tab.dataset.tab === name;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', String(active));
+    });
+    const plansPanel = document.getElementById('plansPanel');
+    const mediaPanel = document.getElementById('mediaPanel');
+    if (plansPanel) plansPanel.hidden = name !== 'plans';
+    if (mediaPanel) mediaPanel.hidden = name !== 'media';
+}
+
+/* --------------------------------------------------------------------------
+   PLANOS
+   -------------------------------------------------------------------------- */
 
 function createField(labelText, fieldName, value, required = false) {
     const label = document.createElement('label');
@@ -120,16 +160,254 @@ function collectPlans() {
     }));
 }
 
-if (addPlanBtn) {
-    addPlanBtn.addEventListener('click', () => {
-        const row = createPlanRow({ name: '', price: '', details: '', isWarning: false });
-        plansEditor.appendChild(row);
-        renumberPlans();
-        updateAddButton();
-        const nameInput = row.querySelector('[data-field="name"]');
-        if (nameInput) nameInput.focus();
+/* --------------------------------------------------------------------------
+   POR DENTRO DA BRAZ (MÍDIAS)
+   -------------------------------------------------------------------------- */
+
+function createSelect(labelText, fieldName, options, value) {
+    const label = document.createElement('label');
+    label.className = 'field';
+
+    const span = document.createElement('span');
+    span.textContent = labelText;
+
+    const select = document.createElement('select');
+    select.dataset.field = fieldName;
+    options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.label;
+        select.appendChild(opt);
+    });
+    select.value = value || options[0].value;
+
+    label.appendChild(span);
+    label.appendChild(select);
+    return label;
+}
+
+function renumberMedia() {
+    const rows = mediaEditor.querySelectorAll('.media-row');
+    rows.forEach((row, index) => {
+        const title = row.querySelector('.media-row-title');
+        if (title) title.textContent = `Mídia ${index + 1}`;
+        const removeBtn = row.querySelector('.btn-remove');
+        if (removeBtn) removeBtn.setAttribute('aria-label', `Excluir mídia ${index + 1}`);
+        const upBtn = row.querySelector('[data-move="up"]');
+        const downBtn = row.querySelector('[data-move="down"]');
+        if (upBtn) upBtn.disabled = index === 0;
+        if (downBtn) downBtn.disabled = index === rows.length - 1;
+    });
+    if (addMediaBtn) addMediaBtn.disabled = rows.length >= MAX_MEDIA_ITEMS;
+}
+
+function updateMediaRow(row) {
+    const type = row.querySelector('[data-field="type"]').value;
+    row.dataset.type = type;
+
+    const srcInput = row.querySelector('[data-field="src"]');
+    if (srcInput) srcInput.placeholder = SRC_PLACEHOLDERS[type] || '';
+
+    const uploadField = row.querySelector('[data-role="upload-field"]');
+    const titleField = row.querySelector('[data-role="title-field"]');
+    const posterField = row.querySelector('[data-role="poster-field"]');
+
+    if (uploadField) uploadField.hidden = type !== 'video' && type !== 'image';
+    if (titleField) titleField.hidden = type !== 'youtube' && type !== 'link';
+    if (posterField) posterField.hidden = type !== 'link';
+}
+
+function createMediaRow(item) {
+    const data = item || { type: 'video', src: '' };
+    const row = document.createElement('div');
+    row.className = 'media-row';
+
+    const head = document.createElement('div');
+    head.className = 'media-row-head';
+
+    const title = document.createElement('span');
+    title.className = 'media-row-title';
+
+    const actions = document.createElement('div');
+    actions.className = 'media-row-actions';
+
+    const upBtn = document.createElement('button');
+    upBtn.type = 'button';
+    upBtn.className = 'btn-move';
+    upBtn.dataset.move = 'up';
+    upBtn.innerHTML = '<i class="fas fa-arrow-up" aria-hidden="true"></i>';
+    upBtn.addEventListener('click', () => {
+        const prev = row.previousElementSibling;
+        if (prev) {
+            mediaEditor.insertBefore(row, prev);
+            renumberMedia();
+        }
+    });
+
+    const downBtn = document.createElement('button');
+    downBtn.type = 'button';
+    downBtn.className = 'btn-move';
+    downBtn.dataset.move = 'down';
+    downBtn.innerHTML = '<i class="fas fa-arrow-down" aria-hidden="true"></i>';
+    downBtn.addEventListener('click', () => {
+        const next = row.nextElementSibling;
+        if (next) {
+            mediaEditor.insertBefore(next, row);
+            renumberMedia();
+        }
+    });
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn-remove';
+    removeBtn.textContent = 'Excluir';
+    removeBtn.addEventListener('click', () => {
+        if (window.confirm('Excluir esta mídia?')) {
+            row.remove();
+            renumberMedia();
+        }
+    });
+
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+    actions.appendChild(removeBtn);
+    head.appendChild(title);
+    head.appendChild(actions);
+    row.appendChild(head);
+
+    const typeSelect = createSelect('Tipo', 'type', MEDIA_TYPES, data.type);
+    typeSelect.querySelector('select').addEventListener('change', () => updateMediaRow(row));
+    row.appendChild(typeSelect);
+
+    const srcLabel = document.createElement('label');
+    srcLabel.className = 'field';
+    const srcSpan = document.createElement('span');
+    srcSpan.textContent = 'URL / link';
+    const srcInput = document.createElement('input');
+    srcInput.type = 'text';
+    srcInput.dataset.field = 'src';
+    srcInput.value = data.src || '';
+    srcLabel.appendChild(srcSpan);
+    srcLabel.appendChild(srcInput);
+    row.appendChild(srcLabel);
+
+    const uploadField = document.createElement('div');
+    uploadField.className = 'field';
+    uploadField.dataset.role = 'upload-field';
+    const uploadSpan = document.createElement('span');
+    uploadSpan.textContent = 'Enviar arquivo';
+    const uploadRow = document.createElement('div');
+    uploadRow.className = 'media-upload-row';
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp';
+    fileInput.dataset.field = 'file';
+    const uploadStatus = document.createElement('span');
+    uploadStatus.className = 'media-upload-status';
+    uploadStatus.dataset.role = 'upload-status';
+    uploadRow.appendChild(fileInput);
+    uploadRow.appendChild(uploadStatus);
+    uploadField.appendChild(uploadSpan);
+    uploadField.appendChild(uploadRow);
+    row.appendChild(uploadField);
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (file) handleFileUpload(row, file);
+    });
+
+    const titleField = document.createElement('label');
+    titleField.className = 'field';
+    titleField.dataset.role = 'title-field';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = 'Título (opcional)';
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.dataset.field = 'title';
+    titleInput.value = data.title || '';
+    titleField.appendChild(titleSpan);
+    titleField.appendChild(titleInput);
+    row.appendChild(titleField);
+
+    const posterField = document.createElement('label');
+    posterField.className = 'field';
+    posterField.dataset.role = 'poster-field';
+    const posterSpan = document.createElement('span');
+    posterSpan.textContent = 'Imagem de capa (opcional, URL)';
+    const posterInput = document.createElement('input');
+    posterInput.type = 'text';
+    posterInput.dataset.field = 'poster';
+    posterInput.value = data.poster || '';
+    posterField.appendChild(posterSpan);
+    posterField.appendChild(posterInput);
+    row.appendChild(posterField);
+
+    updateMediaRow(row);
+    return row;
+}
+
+async function handleFileUpload(row, file) {
+    const status = row.querySelector('[data-role="upload-status"]');
+    const srcInput = row.querySelector('[data-field="src"]');
+    const typeSelect = row.querySelector('[data-field="type"]');
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+        if (status) status.textContent = 'Arquivo muito grande (máximo 100 MB).';
+        return;
+    }
+
+    if (status) status.textContent = 'Enviando... 0%';
+
+    try {
+        const blob = await upload(file.name, file, {
+            access: 'public',
+            handleUploadUrl: '/api/upload',
+            onUploadProgress: ({ percentage }) => {
+                if (status) status.textContent = `Enviando... ${Math.round(percentage)}%`;
+            }
+        });
+
+        if (srcInput) srcInput.value = blob.url;
+        if (typeSelect && file.type.startsWith('image/')) {
+            typeSelect.value = 'image';
+        } else if (typeSelect) {
+            typeSelect.value = 'video';
+        }
+        updateMediaRow(row);
+        if (status) status.textContent = 'Enviado! Clique em Salvar mídias.';
+    } catch (error) {
+        if (status) status.textContent = error.message || 'Falha ao enviar o arquivo.';
+    }
+}
+
+function renderMediaEditor(items) {
+    mediaEditor.innerHTML = '';
+    items.forEach(item => mediaEditor.appendChild(createMediaRow(item)));
+    renumberMedia();
+}
+
+function collectMedia() {
+    return Array.from(mediaEditor.querySelectorAll('.media-row')).map(row => {
+        const type = row.querySelector('[data-field="type"]').value;
+        const item = {
+            type,
+            src: row.querySelector('[data-field="src"]').value.trim()
+        };
+        if (type === 'youtube' || type === 'link') {
+            const title = row.querySelector('[data-field="title"]').value.trim();
+            if (title) item.title = title;
+        }
+        if (type === 'link') {
+            const poster = row.querySelector('[data-field="poster"]').value.trim();
+            if (poster) item.poster = poster;
+        }
+        return item;
     });
 }
+
+/* --------------------------------------------------------------------------
+   CARREGAMENTO
+   -------------------------------------------------------------------------- */
 
 async function loadPlans() {
     const response = await fetch('/api/plans', { credentials: 'same-origin' });
@@ -147,6 +425,64 @@ async function loadPlans() {
     renderEditor(Array.isArray(data.plans) ? data.plans : []);
     showEditor();
 }
+
+async function loadCatalog() {
+    try {
+        const response = await fetch('/api/catalog', { credentials: 'same-origin' });
+
+        if (response.status === 401) {
+            showLogin();
+            return;
+        }
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao carregar as mídias.');
+        }
+
+        renderMediaEditor(Array.isArray(data.items) ? data.items : []);
+        clearMessage(mediaStatusEl);
+    } catch (error) {
+        renderMediaEditor([]);
+        setMessage(mediaStatusEl, error.message, 'error');
+    }
+}
+
+async function loadAll() {
+    await loadPlans();
+    if (!editorView.hidden) {
+        await loadCatalog();
+    }
+}
+
+/* --------------------------------------------------------------------------
+   EVENTOS
+   -------------------------------------------------------------------------- */
+
+if (addPlanBtn) {
+    addPlanBtn.addEventListener('click', () => {
+        const row = createPlanRow({ name: '', price: '', details: '', isWarning: false });
+        plansEditor.appendChild(row);
+        renumberPlans();
+        updateAddButton();
+        const nameInput = row.querySelector('[data-field="name"]');
+        if (nameInput) nameInput.focus();
+    });
+}
+
+if (addMediaBtn) {
+    addMediaBtn.addEventListener('click', () => {
+        const row = createMediaRow({ type: 'video', src: '' });
+        mediaEditor.appendChild(row);
+        renumberMedia();
+        const srcInput = row.querySelector('[data-field="src"]');
+        if (srcInput) srcInput.focus();
+    });
+}
+
+document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+});
 
 loginForm.addEventListener('submit', async event => {
     event.preventDefault();
@@ -171,7 +507,7 @@ loginForm.addEventListener('submit', async event => {
         }
 
         document.getElementById('password').value = '';
-        await loadPlans();
+        await loadAll();
     } catch (error) {
         setMessage(loginError, error.message, 'error');
     } finally {
@@ -213,6 +549,46 @@ plansForm.addEventListener('submit', async event => {
     }
 });
 
+mediaForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    clearMessage(mediaStatusEl);
+
+    const items = collectMedia();
+    if (items.some(item => !item.src)) {
+        setMessage(mediaStatusEl, 'Preencha a URL/link de todas as mídias ou remova as que estão vazias.', 'error');
+        return;
+    }
+
+    saveMediaBtn.disabled = true;
+    saveMediaBtn.textContent = 'Salvando...';
+
+    try {
+        const response = await fetch('/api/catalog', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ items })
+        });
+
+        if (response.status === 401) {
+            showLogin();
+            throw new Error('Sessão expirada. Faça login novamente.');
+        }
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao salvar as mídias.');
+        }
+
+        setMessage(mediaStatusEl, 'Salvo! O site será atualizado em cerca de 10 segundos.', 'success');
+    } catch (error) {
+        setMessage(mediaStatusEl, error.message, 'error');
+    } finally {
+        saveMediaBtn.disabled = false;
+        saveMediaBtn.textContent = 'Salvar mídias';
+    }
+});
+
 logoutBtn.addEventListener('click', async () => {
     try {
         await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
@@ -222,4 +598,4 @@ logoutBtn.addEventListener('click', async () => {
     window.location.href = '/';
 });
 
-loadPlans().catch(() => showLogin());
+loadAll().catch(() => showLogin());

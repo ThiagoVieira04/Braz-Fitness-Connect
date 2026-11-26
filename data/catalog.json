@@ -1,0 +1,90 @@
+[
+  {
+    "type": "video",
+    "src": "assets/media/videos/video01.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video02.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video03.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video04.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video05.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video06.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video07.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video08.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video09.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video10.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video11.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video12.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video13.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video14.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video15.mp4"
+  },
+  {
+    "type": "video",
+    "src": "assets/media/videos/video16.mp4"
+  },
+  {
+    "type": "image",
+    "src": "assets/media/imagens/img04.jpeg"
+  },
+  {
+    "type": "image",
+    "src": "assets/media/imagens/img05.jpeg"
+  },
+  {
+    "type": "image",
+    "src": "assets/media/imagens/img06.jpeg"
+  },
+  {
+    "type": "image",
+    "src": "assets/media/imagens/img07.jpeg"
+  },
+  {
+    "type": "image",
+    "src": "assets/media/imagens/img08.jpeg"
+  },
+  {
+    "type": "image",
+    "src": "assets/media/imagens/img09.jpeg"
+  }
+]

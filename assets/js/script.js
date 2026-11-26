@@ -306,6 +306,83 @@ async function loadPlans() {
     return PLANS;
 }
 
+function isValidMediaUrl(value) {
+    if (typeof value !== 'string') return false;
+    const trimmed = value.trim();
+    if (!trimmed) return false;
+    if (/^assets\/[A-Za-z0-9._\-\/]+$/.test(trimmed)) return true;
+    if (!/^https?:\/\//i.test(trimmed)) return false;
+    try {
+        new URL(trimmed);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function isYoutubeUrl(value) {
+    if (!isValidMediaUrl(value)) return false;
+    try {
+        const url = new URL(value);
+        const host = url.hostname.toLowerCase().replace(/^www\./, '');
+        return host === 'youtube.com'
+            || host === 'm.youtube.com'
+            || host === 'youtu.be'
+            || host === 'youtube-nocookie.com';
+    } catch {
+        return false;
+    }
+}
+
+function getYoutubeId(value) {
+    try {
+        const url = new URL(value);
+        const host = url.hostname.toLowerCase().replace(/^www\./, '');
+        if (host === 'youtu.be') {
+            return url.pathname.split('/').filter(Boolean)[0] || '';
+        }
+        if (url.pathname.startsWith('/shorts/') || url.pathname.startsWith('/embed/')) {
+            return url.pathname.split('/').filter(Boolean)[1] || '';
+        }
+        return url.searchParams.get('v') || '';
+    } catch {
+        return '';
+    }
+}
+
+function getYoutubeThumbnail(id) {
+    return `https://img.youtube.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`;
+}
+
+function normalizeMediaItem(item) {
+    if (!item || typeof item !== 'object') return null;
+    const type = ['video', 'image', 'youtube', 'link'].includes(item.type) ? item.type : null;
+    if (!type || !isValidMediaUrl(item.src)) return null;
+    if (type === 'youtube' && (!isYoutubeUrl(item.src) || !getYoutubeId(item.src))) return null;
+
+    const normalized = {
+        type,
+        src: item.src.trim(),
+        title: typeof item.title === 'string' ? item.title.slice(0, 120) : '',
+        poster: typeof item.poster === 'string' && isValidMediaUrl(item.poster) ? item.poster.trim() : ''
+    };
+    return normalized;
+}
+
+async function loadCatalog() {
+    try {
+        const res = await fetch('data/catalog.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+            return data.map(normalizeMediaItem).filter(Boolean);
+        }
+    } catch (err) {
+        console.warn('Não foi possível carregar data/catalog.json. Usando catálogo padrão.', err);
+    }
+    return CATALOG_MEDIA.map(normalizeMediaItem).filter(Boolean);
+}
+
 async function renderPlans() {
     const list = document.getElementById('plansList');
     const header = document.getElementById('plansHeader');
@@ -431,7 +508,7 @@ function bindVideoControls(vc, mediaList = CATALOG_MEDIA) {
     });
 }
 
-function renderCatalog() {
+async function renderCatalog() {
     const track = document.getElementById('catalogTrack');
     const dotsContainer = document.getElementById('catalogDots');
     const header = document.getElementById('catalogHeader');
@@ -439,13 +516,21 @@ function renderCatalog() {
     const arrow = document.getElementById('catalogArrow');
     if (!track || !header || !body) return;
 
+    const catalogItems = await loadCatalog();
     let currentIndex = 0;
     let startX = 0;
     let currentX = 0;
     let imageAutoAdvanceTimer = null;
     let isDragging = false;
 
-    CATALOG_MEDIA.forEach((media, index) => {
+    if (catalogItems.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'catalog-empty';
+        empty.textContent = 'Nenhuma mídia cadastrada no momento.';
+        track.appendChild(empty);
+    }
+
+    catalogItems.forEach((media, index) => {
         const slide = document.createElement('div');
         slide.className = 'catalog-slide';
         slide.style.cursor = 'pointer';
@@ -453,7 +538,7 @@ function renderCatalog() {
         if (media.type === 'video') {
             slide.innerHTML = `
                 <div class="video-container">
-                    <video src="${media.src}" playsinline preload="metadata"></video>
+                    <video src="${escapeHtml(media.src)}" playsinline preload="metadata"></video>
                     <div class="video-controls">
                         <button class="video-btn video-play-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
                         <button class="video-btn video-stop-btn" title="Parar"><i class="fas fa-stop"></i></button>
@@ -464,20 +549,44 @@ function renderCatalog() {
                         <button class="video-btn video-expand-btn" title="Tela cheia"><i class="fas fa-expand" aria-hidden="true"></i></button>
                     </div>
                 </div>`;
+        } else if (media.type === 'youtube') {
+            const id = getYoutubeId(media.src);
+            const label = media.title || 'Vídeo do YouTube';
+            slide.innerHTML = `
+                <div class="catalog-embed-card">
+                    <img src="${escapeHtml(getYoutubeThumbnail(id))}" alt="${escapeHtml(label)}" loading="lazy">
+                    <span class="catalog-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
+                </div>`;
+        } else if (media.type === 'link') {
+            const label = escapeHtml(media.title || 'Abrir link');
+            const icon = '<i class="fas fa-external-link-alt" aria-hidden="true"></i>';
+            slide.innerHTML = media.poster
+                ? `<div class="catalog-link-card">
+                        <img src="${escapeHtml(media.poster)}" alt="${label}" loading="lazy">
+                        <span class="catalog-link-label">${icon} ${label}</span>
+                    </div>`
+                : `<div class="catalog-link-card catalog-link-card--text">
+                        <span class="catalog-link-label">${icon} ${label}</span>
+                    </div>`;
         } else {
-            slide.innerHTML = `<img src="${media.src}" alt="Serviço ${index + 1}" loading="lazy">`;
+            const label = media.title || `Serviço ${index + 1}`;
+            slide.innerHTML = `<img src="${escapeHtml(media.src)}" alt="${escapeHtml(label)}" loading="lazy">`;
         }
 
         slide.addEventListener('click', (e) => {
             if (e.target.closest('.video-controls')) return;
+            if (media.type === 'link') {
+                window.open(media.src, '_blank', 'noopener');
+                return;
+            }
             const tv = slide.querySelector('video');
-            openMediaViewer(media.type, media.src, CATALOG_MEDIA, tv ? tv.currentTime : 0);
+            openMediaViewer(media.type, media.src, catalogItems, tv ? tv.currentTime : 0);
         });
 
         const slideVideo = slide.querySelector('video');
         if (slideVideo) {
             slideVideo.addEventListener('ended', () => {
-                if (currentIndex >= CATALOG_MEDIA.length - 1) return;
+                if (currentIndex >= catalogItems.length - 1) return;
                 goToSlide(currentIndex + 1, true);
             });
         }
@@ -490,11 +599,11 @@ function renderCatalog() {
         dotsContainer.appendChild(dot);
     });
 
-    track.querySelectorAll('.video-container').forEach(bindVideoControls);
+    track.querySelectorAll('.video-container').forEach(vc => bindVideoControls(vc, catalogItems));
 
     const counter = document.createElement('div');
     counter.className = 'catalog-counter';
-    counter.textContent = `1 / ${CATALOG_MEDIA.length}`;
+    counter.textContent = `1 / ${catalogItems.length}`;
     dotsContainer.after(counter);
 
     function clearImageAutoAdvance() {
@@ -507,8 +616,8 @@ function renderCatalog() {
     function scheduleImageAutoAdvance() {
         clearImageAutoAdvance();
         if (!body.classList.contains('open')) return;
-        const currentMedia = CATALOG_MEDIA[currentIndex];
-        if (!currentMedia || currentMedia.type === 'video') return;
+        const currentMedia = catalogItems[currentIndex];
+        if (!currentMedia || currentMedia.type !== 'image') return;
         imageAutoAdvanceTimer = setTimeout(() => {
             goToSlide(currentIndex + 1, true);
         }, 8000);
@@ -519,6 +628,11 @@ function renderCatalog() {
         const dots = dotsContainer.querySelectorAll('.catalog-dot');
 
         clearImageAutoAdvance();
+
+        if (!slides.length) {
+            counter.textContent = '0 / 0';
+            return;
+        }
 
         if (index < 0) index = slides.length - 1;
         if (index >= slides.length) index = 0;
@@ -882,40 +996,68 @@ function showViewerAt(index) {
         let video = content.querySelector('video');
         if (!video) {
             content.innerHTML = `
-                <video src="${item.src}" controls playsinline preload="auto"></video>
+                <video src="${escapeHtml(item.src)}" controls playsinline preload="auto"></video>
                 <div class="media-viewer-counter"></div>`;
             video = content.querySelector('video');
             if (video) {
                 video.addEventListener('ended', () => showViewerAt(viewerIndex + 1));
-
-                const start = viewerStartAt;
-                viewerStartAt = 0;
-                if (start > 0) {
-                    const applyStart = () => {
-                        const max = isFinite(video.duration) && video.duration > 0 ? video.duration - 0.1 : start;
-                        try { video.currentTime = Math.min(start, Math.max(0, max)); } catch (e) {}
-                    };
-                    if (video.readyState >= 1) applyStart();
-                    else video.addEventListener('loadedmetadata', applyStart, { once: true });
-                }
             }
         } else {
             video.src = item.src;
         }
-        const counter = content.querySelector('.media-viewer-counter');
-        if (counter) {
-            counter.style.display = viewerList.length > 1 ? '' : 'none';
-            counter.textContent = `${index + 1} / ${viewerList.length}`;
+
+        if (video) {
+            const start = viewerStartAt;
+            viewerStartAt = 0;
+            if (start > 0) {
+                const applyStart = () => {
+                    const max = isFinite(video.duration) && video.duration > 0 ? video.duration - 0.1 : start;
+                    try { video.currentTime = Math.min(start, Math.max(0, max)); } catch (e) {}
+                };
+                if (video.readyState >= 1) applyStart();
+                else video.addEventListener('loadedmetadata', applyStart, { once: true });
+            }
+            video.play().catch(() => {});
         }
-        if (video) video.play().catch(() => {});
+    } else if (item.type === 'youtube') {
+        const id = getYoutubeId(item.src);
+        const title = escapeHtml(item.title || 'Vídeo do YouTube');
+        content.innerHTML = `
+            <div class="media-viewer-embed">
+                <iframe src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0" title="${title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <div class="media-viewer-counter"></div>`;
+    } else if (item.type === 'link') {
+        const label = escapeHtml(item.title || 'Abrir link');
+        content.innerHTML = `
+            <div class="media-viewer-link">
+                <a href="${escapeHtml(item.src)}" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                    <span>${label}</span>
+                </a>
+            </div>
+            <div class="media-viewer-counter"></div>`;
     } else {
-        content.innerHTML = `<img src="${item.src}" alt="Mídia em tela cheia">`;
+        content.innerHTML = `
+            <img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.title || 'Mídia em tela cheia')}">
+            <div class="media-viewer-counter"></div>`;
+    }
+
+    const counter = content.querySelector('.media-viewer-counter');
+    if (counter) {
+        counter.style.display = viewerList.length > 1 ? '' : 'none';
+        counter.textContent = `${index + 1} / ${viewerList.length}`;
     }
 
     updateViewerNav();
 }
 
 function openMediaViewer(type, src, mediaList = CATALOG_MEDIA, startAt = 0) {
+    if (type === 'link') {
+        window.open(src, '_blank', 'noopener');
+        return;
+    }
+
     const modal = document.getElementById('mediaViewerModal');
     const content = document.getElementById('mediaViewerContent');
     const closeBtn = document.getElementById('mediaViewerClose');
@@ -925,19 +1067,14 @@ function openMediaViewer(type, src, mediaList = CATALOG_MEDIA, startAt = 0) {
     modal.classList.add('active');
     document.body.classList.add('viewer-open');
 
-    if (type === 'video') {
-        viewerList = (Array.isArray(mediaList) && mediaList.length) ? mediaList : [{ type, src }];
-        viewerIndex = viewerList.findIndex(m => m.src === src);
-        if (viewerIndex < 0) {
-            viewerList = [{ type, src }];
-            viewerIndex = 0;
-        }
-        viewerStartAt = startAt > 0 ? startAt : 0;
-        showViewerAt(viewerIndex);
-    } else {
-        content.innerHTML = `<img src="${src}" alt="Mídia em tela cheia">`;
-        updateViewerNav();
+    viewerList = (Array.isArray(mediaList) && mediaList.length) ? mediaList : [{ type, src }];
+    viewerIndex = viewerList.findIndex(m => m.src === src);
+    if (viewerIndex < 0) {
+        viewerList = [{ type, src }];
+        viewerIndex = 0;
     }
+    viewerStartAt = startAt > 0 ? startAt : 0;
+    showViewerAt(viewerIndex);
 
     document.querySelectorAll('video').forEach(v => {
         if (content.contains(v)) return;

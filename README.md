@@ -74,8 +74,10 @@ const CONFIG = {
 
 **Trocar os vídeos:**
 
+O carrossel **Por Dentro da Braz** é carregado de `data/catalog.json` (editável pelo painel `/admin`). O array em `assets/js/script.js` serve apenas como fallback caso o JSON não esteja disponível:
+
 ```javascript
-const CATALOG_MEDIA = [ /* vídeos do catálogo */ ];
+const CATALOG_MEDIA = [ /* fallback do catálogo */ ];
 
 const TESTIMONIALS_MEDIA = [
     { type: 'video', src: 'assets/media/videos/depo 1.mp4' },
@@ -83,7 +85,7 @@ const TESTIMONIALS_MEDIA = [
 ];
 ```
 
-Salve, recarregue e pronto.
+Para adicionar vídeos e imagens, prefira o painel `/admin` → **Por Dentro da Braz**.
 
 ---
 
@@ -91,9 +93,16 @@ Salve, recarregue e pronto.
 
 ```
 ├── index.html              ← Página principal
+├── admin.html              ← Painel administrativo
 ├── style.css               ← Estilos e temas
+├── package.json            ← Dependência @vercel/blob
+├── api/                    ← Funções serverless (login, planos, catálogo, upload)
+├── lib/                    ← Sessão do admin
+├── data/
+│   ├── plans.json          ← Planos editáveis
+│   └── catalog.json        ← Mídias de "Por Dentro da Braz"
 ├── assets/
-│   ├── js/script.js        ← Lógica, CONFIG e mídias
+│   ├── js/script.js        ← Lógica, CONFIG e fallback de mídias
 │   ├── img/                ← Logo, ícones e gifs
 │   └── media/videos/       ← Catálogo + depoimentos (depo 1, depo 2)
 ├── manifest.json           ← PWA
@@ -111,9 +120,13 @@ Salve, recarregue e pronto.
 
 ---
 
-## Admin (Planos e Valores)
+## Admin (Planos e Mídias)
 
-A página `/admin` permite editar os valores dos planos exibidos no site. Ao salvar, o arquivo `data/plans.json` é atualizado via commit no GitHub e a Vercel refaz o deploy automaticamente (~10s).
+A página `/admin` permite:
+- editar os valores dos planos exibidos no site (`data/plans.json`);
+- gerenciar o carrossel **Por Dentro da Braz** (`data/catalog.json`), adicionando vídeos e imagens por link (YouTube, Instagram, `.mp4`) ou por upload de arquivo.
+
+Ao salvar, o JSON correspondente é atualizado via commit no GitHub e a Vercel refaz o deploy automaticamente (~10s). Os arquivos enviados pelo painel são armazenados no **Vercel Blob** (não incham o repositório).
 
 Configure as variáveis de ambiente no painel da Vercel:
 
@@ -125,6 +138,16 @@ Configure as variáveis de ambiente no painel da Vercel:
 | `GITHUB_TOKEN` | PAT fine-grained com **Contents: Read and write** neste repositório |
 | `GITHUB_REPO` | `ThiagoVieira04/Braz-Fitness-Connect` |
 | `GITHUB_BRANCH` | `main` |
+| `BLOB_READ_WRITE_TOKEN` | Token read-write do Vercel Blob (gerado ao conectar um Blob Store público ao projeto) |
+
+### Uploads (Vercel Blob)
+
+1. No painel da Vercel, abra **Storage → Create → Blob**.
+2. Escolha acesso **Public** e conecte ao projeto.
+3. Marque **Add a read-write token env var to this connection** (cria `BLOB_READ_WRITE_TOKEN`).
+4. Faça o deploy. No admin, use **Enviar arquivo** em cada mídia.
+
+> O cliente de upload do navegador é versionado em `assets/js/vendor/vercel-blob-client.mjs`. Para regenerá-lo após atualizar `@vercel/blob`, rode `npm run build:blob-client`.
 
 ---
 
@@ -134,6 +157,7 @@ Configure as variáveis de ambiente no painel da Vercel:
 - [Font Awesome 6](https://fontawesome.com/) — Ícones
 - [QRCode.js](https://github.com/davidshimjs/qrcodejs) — QR Code
 - [VLibras](https://vlibras.gov.br/) — Tradução de Libras
+- [Vercel Blob](https://vercel.com/docs/vercel-blob) — Upload de vídeos e imagens do admin
 
 ---
 
