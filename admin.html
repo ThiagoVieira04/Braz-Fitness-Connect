@@ -41,7 +41,7 @@
                     <img src="assets/img/logo.jpeg" alt="Academia Braz Fitness">
                     <div>
                         <h1>Painel de Conteúdo</h1>
-                        <p>Planos e mídias do site</p>
+                        <p id="adminGreeting">Planos e mídias do site</p>
                     </div>
                 </div>
                 <button type="button" class="btn-ghost" id="logoutBtn">Sair</button>
@@ -50,6 +50,7 @@
             <nav class="admin-tabs" aria-label="Seções do painel">
                 <button type="button" class="admin-tab active" id="plansTab" data-tab="plans" aria-controls="plansPanel" aria-selected="true">Planos e Valores</button>
                 <button type="button" class="admin-tab" id="mediaTab" data-tab="media" aria-controls="mediaPanel" aria-selected="false">Por Dentro da Braz</button>
+                <button type="button" class="admin-tab" id="accountTab" data-tab="account" aria-controls="accountPanel" aria-selected="false">Minha conta</button>
             </nav>
 
             <div class="admin-panel" id="plansPanel">
@@ -78,6 +79,30 @@
                 </form>
 
                 <p class="message" id="mediaStatus" hidden></p>
+            </div>
+
+            <div class="admin-panel" id="accountPanel" hidden>
+                <p class="hint">Atualize o nome exibido no painel e o usuário usado para entrar. Confirme as alterações com sua senha atual; a senha não será alterada.</p>
+
+                <form id="accountForm">
+                    <label class="field">
+                        <span>Nome</span>
+                        <input type="text" id="accountName" maxlength="80" autocomplete="name" required>
+                    </label>
+                    <label class="field">
+                        <span>Usuário de acesso</span>
+                        <input type="text" id="accountUsername" minlength="3" maxlength="40" pattern="[A-Za-z0-9._-]+" autocomplete="username" required>
+                    </label>
+                    <label class="field">
+                        <span>Senha atual para confirmar</span>
+                        <input type="password" id="accountCurrentPassword" autocomplete="current-password" required>
+                    </label>
+                    <div class="actions">
+                        <button type="submit" class="btn-primary" id="saveAccountBtn">Salvar conta</button>
+                    </div>
+                </form>
+
+                <p class="message" id="accountStatus" hidden></p>
             </div>
         </section>
     </main>

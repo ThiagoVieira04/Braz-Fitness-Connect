@@ -125,14 +125,17 @@ Para adicionar vídeos e imagens, prefira o painel `/admin` → **Por Dentro da 
 A página `/admin` permite:
 - editar os valores dos planos exibidos no site (`data/plans.json`);
 - gerenciar o carrossel **Por Dentro da Braz** (`data/catalog.json`), adicionando vídeos e imagens por link (YouTube, Instagram, `.mp4`) ou por upload de arquivo.
+- alterar o nome exibido no painel e o usuário de acesso, confirmando com a senha atual.
 
 Ao salvar, o JSON correspondente é atualizado via commit no GitHub e a Vercel refaz o deploy automaticamente (~10s). Os arquivos enviados pelo painel são armazenados no **Vercel Blob** (não incham o repositório).
+O perfil do administrador é criptografado com `SESSION_SECRET` antes de ser salvo no GitHub; a senha continua configurada pela variável `ADMIN_PASSWORD`.
 
 Configure as variáveis de ambiente no painel da Vercel:
 
 | Variável | Descrição |
 |----------|-----------|
 | `ADMIN_USER` | Usuário do admin |
+| `ADMIN_NAME` | Nome inicial exibido no admin (opcional; por padrão usa `ADMIN_USER`) |
 | `ADMIN_PASSWORD` | Senha do admin |
 | `SESSION_SECRET` | String aleatória longa para assinar a sessão |
 | `GITHUB_TOKEN` | PAT fine-grained com **Contents: Read and write** neste repositório |

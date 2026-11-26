@@ -16,6 +16,12 @@ const mediaEditor = document.getElementById('mediaEditor');
 const addMediaBtn = document.getElementById('addMediaBtn');
 const saveMediaBtn = document.getElementById('saveMediaBtn');
 const mediaStatusEl = document.getElementById('mediaStatus');
+const accountForm = document.getElementById('accountForm');
+const accountName = document.getElementById('accountName');
+const accountUsername = document.getElementById('accountUsername');
+const accountCurrentPassword = document.getElementById('accountCurrentPassword');
+const saveAccountBtn = document.getElementById('saveAccountBtn');
+const accountStatusEl = document.getElementById('accountStatus');
 
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 const MAX_MEDIA_ITEMS = 100;
@@ -58,8 +64,22 @@ function activateTab(name) {
     });
     const plansPanel = document.getElementById('plansPanel');
     const mediaPanel = document.getElementById('mediaPanel');
+    const accountPanel = document.getElementById('accountPanel');
     if (plansPanel) plansPanel.hidden = name !== 'plans';
     if (mediaPanel) mediaPanel.hidden = name !== 'media';
+    if (accountPanel) accountPanel.hidden = name !== 'account';
+}
+
+async function loadAdminProfile() {
+    const response = await fetch('/api/admin-profile', { credentials: 'same-origin' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.error || 'Erro ao carregar a conta do administrador.');
+    }
+
+    accountName.value = data.profile.name;
+    accountUsername.value = data.profile.username;
+    document.getElementById('adminGreeting').textContent = `Olá, ${data.profile.name}`;
 }
 
 /* --------------------------------------------------------------------------
@@ -425,6 +445,12 @@ async function loadAll() {
     await loadPlans();
     if (!editorView.hidden) {
         await loadCatalog();
+        try {
+            await loadAdminProfile();
+            clearMessage(accountStatusEl);
+        } catch (error) {
+            setMessage(accountStatusEl, error.message, 'error');
+        }
     }
 }
 
@@ -559,6 +585,51 @@ mediaForm.addEventListener('submit', async event => {
     } finally {
         saveMediaBtn.disabled = false;
         saveMediaBtn.textContent = 'Salvar mídias';
+    }
+});
+
+accountForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    clearMessage(accountStatusEl);
+    saveAccountBtn.disabled = true;
+    saveAccountBtn.textContent = 'Salvando...';
+
+    try {
+        const response = await fetch('/api/admin-profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                name: accountName.value,
+                username: accountUsername.value,
+                currentPassword: accountCurrentPassword.value
+            })
+        });
+
+        if (response.status === 401) {
+            const data = await response.json().catch(() => ({}));
+            if (data.error === 'Não autorizado.') {
+                showLogin();
+                throw new Error('Sessão expirada. Faça login novamente.');
+            }
+            throw new Error(data.error || 'Senha atual incorreta.');
+        }
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao salvar a conta.');
+        }
+
+        accountCurrentPassword.value = '';
+        accountName.value = data.profile.name;
+        accountUsername.value = data.profile.username;
+        document.getElementById('adminGreeting').textContent = `Olá, ${data.profile.name}`;
+        setMessage(accountStatusEl, 'Conta atualizada. Use o novo usuário no próximo login.', 'success');
+    } catch (error) {
+        setMessage(accountStatusEl, error.message, 'error');
+    } finally {
+        saveAccountBtn.disabled = false;
+        saveAccountBtn.textContent = 'Salvar conta';
     }
 });
 

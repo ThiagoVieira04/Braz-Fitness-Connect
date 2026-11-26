@@ -3,6 +3,7 @@ import {
     buildSessionCookie,
     timingSafeEqualStrings
 } from '../lib/session.js';
+import { getAdminProfile, AdminProfileError } from '../lib/admin-profile.js';
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
 
     const username = body && body.username;
     const password = body && body.password;
-    const adminUser = process.env.ADMIN_USER;
+    let adminUser = process.env.ADMIN_USER;
     const adminPassword = process.env.ADMIN_PASSWORD;
 
     if (!adminUser || !adminPassword || !process.env.SESSION_SECRET) {
@@ -58,6 +59,21 @@ export default async function handler(req, res) {
 
     if (typeof username !== 'string' || typeof password !== 'string') {
         return res.status(400).json({ error: 'Informe usuário e senha.' });
+    }
+
+    if (process.env.GITHUB_REPO && process.env.GITHUB_TOKEN) {
+        try {
+            const profile = await getAdminProfile();
+            adminUser = profile.username;
+        } catch (error) {
+            const status = error instanceof AdminProfileError ? error.status : 502;
+            console.error('Erro ao carregar perfil para login', error);
+            return res.status(status).json({
+                error: error instanceof AdminProfileError
+                    ? error.message
+                    : 'Erro ao carregar o perfil do administrador.'
+            });
+        }
     }
 
     const userOk = timingSafeEqualStrings(username, adminUser);
