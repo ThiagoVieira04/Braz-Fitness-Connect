@@ -20,6 +20,8 @@ const accountForm = document.getElementById('accountForm');
 const accountName = document.getElementById('accountName');
 const accountUsername = document.getElementById('accountUsername');
 const accountCurrentPassword = document.getElementById('accountCurrentPassword');
+const accountNewPassword = document.getElementById('accountNewPassword');
+const accountConfirmNewPassword = document.getElementById('accountConfirmNewPassword');
 const saveAccountBtn = document.getElementById('saveAccountBtn');
 const accountStatusEl = document.getElementById('accountStatus');
 
@@ -602,7 +604,9 @@ accountForm.addEventListener('submit', async event => {
             body: JSON.stringify({
                 name: accountName.value,
                 username: accountUsername.value,
-                currentPassword: accountCurrentPassword.value
+                currentPassword: accountCurrentPassword.value,
+                newPassword: accountNewPassword.value,
+                confirmNewPassword: accountConfirmNewPassword.value
             })
         });
 
@@ -621,10 +625,12 @@ accountForm.addEventListener('submit', async event => {
         }
 
         accountCurrentPassword.value = '';
+        accountNewPassword.value = '';
+        accountConfirmNewPassword.value = '';
         accountName.value = data.profile.name;
         accountUsername.value = data.profile.username;
         document.getElementById('adminGreeting').textContent = `Olá, ${data.profile.name}`;
-        setMessage(accountStatusEl, 'Conta atualizada. Use o novo usuário no próximo login.', 'success');
+        setMessage(accountStatusEl, 'Conta atualizada. Use o novo usuário e, se alterada, a nova senha no próximo login.', 'success');
     } catch (error) {
         setMessage(accountStatusEl, error.message, 'error');
     } finally {

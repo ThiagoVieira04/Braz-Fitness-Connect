@@ -1,5 +1,12 @@
-import { getAdminProfile, saveAdminProfile, AdminProfileError } from '../lib/admin-profile.js';
-import { buildSessionCookie, createSessionToken, getSession, timingSafeEqualStrings } from '../lib/session.js';
+import {
+    getAdminProfile,
+    getAdminSettings,
+    hashAdminPassword,
+    saveAdminProfile,
+    verifyAdminPassword,
+    AdminProfileError
+} from '../lib/admin-profile.js';
+import { buildSessionCookie, createSessionToken, getSession } from '../lib/session.js';
 
 function isSameOrigin(req) {
     const origin = req.headers.origin;
@@ -45,13 +52,14 @@ export default async function handler(req, res) {
         const name = body && typeof body.name === 'string' ? body.name.trim() : '';
         const username = body && typeof body.username === 'string' ? body.username.trim() : '';
         const currentPassword = body && body.currentPassword;
-        const adminPassword = process.env.ADMIN_PASSWORD;
+        const newPassword = body && body.newPassword;
+        const confirmNewPassword = body && body.confirmNewPassword;
 
-        if (!adminPassword) {
-            return res.status(500).json({ error: 'ADMIN_PASSWORD não configurado no servidor.' });
+        if (typeof currentPassword !== 'string') {
+            return res.status(401).json({ error: 'Senha atual incorreta.' });
         }
-        if (typeof currentPassword !== 'string'
-            || !timingSafeEqualStrings(currentPassword, adminPassword)) {
+        const currentProfile = await getAdminSettings();
+        if (!await verifyAdminPassword(currentPassword, currentProfile)) {
             return res.status(401).json({ error: 'Senha atual incorreta.' });
         }
         if (!name || name.length > 80) {
@@ -63,10 +71,26 @@ export default async function handler(req, res) {
             });
         }
 
-        const profile = { name, username };
+        const passwordFieldsProvided = newPassword !== undefined || confirmNewPassword !== undefined;
+        const changingPassword = passwordFieldsProvided
+            && (newPassword !== '' || confirmNewPassword !== '');
+        if (changingPassword) {
+            if (typeof newPassword !== 'string' || typeof confirmNewPassword !== 'string'
+                || newPassword !== confirmNewPassword) {
+                return res.status(400).json({ error: 'A nova senha e a confirmação devem ser iguais.' });
+            }
+            if (newPassword.length < 12 || newPassword.length > 128) {
+                return res.status(400).json({ error: 'A nova senha deve ter entre 12 e 128 caracteres.' });
+            }
+        }
+
+        const profile = { ...currentProfile, name, username };
+        if (changingPassword) {
+            profile.passwordHash = await hashAdminPassword(newPassword);
+        }
         await saveAdminProfile(profile);
         res.setHeader('Set-Cookie', buildSessionCookie(createSessionToken(username)));
-        return res.status(200).json({ ok: true, profile });
+        return res.status(200).json({ ok: true, profile: { name, username } });
     } catch (error) {
         const status = error instanceof AdminProfileError ? error.status : 502;
         console.error('Erro em /api/admin-profile', error);

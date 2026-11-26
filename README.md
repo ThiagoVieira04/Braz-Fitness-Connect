@@ -128,7 +128,7 @@ A página `/admin` permite:
 - alterar o nome exibido no painel e o usuário de acesso, confirmando com a senha atual.
 
 Ao salvar, o JSON correspondente é atualizado via commit no GitHub e a Vercel refaz o deploy automaticamente (~10s). Os arquivos enviados pelo painel são armazenados no **Vercel Blob** (não incham o repositório).
-O perfil do administrador é criptografado com `SESSION_SECRET` antes de ser salvo no GitHub; a senha continua configurada pela variável `ADMIN_PASSWORD`.
+O perfil do administrador é criptografado com `SESSION_SECRET` antes de ser salvo no GitHub. A senha inicial é configurada por `ADMIN_PASSWORD`; se alterada pelo painel, o hash é guardado dentro do perfil criptografado. Novas senhas devem ter de 12 a 128 caracteres.
 
 Configure as variáveis de ambiente no painel da Vercel:
 
@@ -136,7 +136,7 @@ Configure as variáveis de ambiente no painel da Vercel:
 |----------|-----------|
 | `ADMIN_USER` | Usuário do admin |
 | `ADMIN_NAME` | Nome inicial exibido no admin (opcional; por padrão usa `ADMIN_USER`) |
-| `ADMIN_PASSWORD` | Senha do admin |
+| `ADMIN_PASSWORD` | Senha inicial do admin (antes da primeira troca pelo painel) |
 | `SESSION_SECRET` | String aleatória longa para assinar a sessão |
 | `GITHUB_TOKEN` | PAT fine-grained com **Contents: Read and write** neste repositório |
 | `GITHUB_REPO` | `ThiagoVieira04/Braz-Fitness-Connect` |

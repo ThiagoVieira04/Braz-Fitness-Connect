@@ -82,7 +82,7 @@
             </div>
 
             <div class="admin-panel" id="accountPanel" hidden>
-                <p class="hint">Atualize o nome exibido no painel e o usuário usado para entrar. Confirme as alterações com sua senha atual; a senha não será alterada.</p>
+                <p class="hint">Atualize seu nome e usuário de acesso. Para trocar a senha, informe e confirme uma nova senha com pelo menos 12 caracteres. Confirme todas as alterações com sua senha atual.</p>
 
                 <form id="accountForm">
                     <label class="field">
@@ -96,6 +96,14 @@
                     <label class="field">
                         <span>Senha atual para confirmar</span>
                         <input type="password" id="accountCurrentPassword" autocomplete="current-password" required>
+                    </label>
+                    <label class="field">
+                        <span>Nova senha (opcional)</span>
+                        <input type="password" id="accountNewPassword" minlength="12" maxlength="128" autocomplete="new-password">
+                    </label>
+                    <label class="field">
+                        <span>Confirmar nova senha</span>
+                        <input type="password" id="accountConfirmNewPassword" minlength="12" maxlength="128" autocomplete="new-password">
                     </label>
                     <div class="actions">
                         <button type="submit" class="btn-primary" id="saveAccountBtn">Salvar conta</button>

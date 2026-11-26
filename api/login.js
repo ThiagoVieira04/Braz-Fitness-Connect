@@ -3,7 +3,11 @@ import {
     buildSessionCookie,
     timingSafeEqualStrings
 } from '../lib/session.js';
-import { getAdminProfile, AdminProfileError } from '../lib/admin-profile.js';
+import {
+    getAdminSettings,
+    verifyAdminPassword,
+    AdminProfileError
+} from '../lib/admin-profile.js';
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -50,10 +54,7 @@ export default async function handler(req, res) {
 
     const username = body && body.username;
     const password = body && body.password;
-    let adminUser = process.env.ADMIN_USER;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-
-    if (!adminUser || !adminPassword || !process.env.SESSION_SECRET) {
+    if (!process.env.SESSION_SECRET) {
         return res.status(500).json({ error: 'Admin não configurado no servidor.' });
     }
 
@@ -61,10 +62,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Informe usuário e senha.' });
     }
 
+    let profile = {
+        name: process.env.ADMIN_NAME || process.env.ADMIN_USER || '',
+        username: process.env.ADMIN_USER || ''
+    };
     if (process.env.GITHUB_REPO && process.env.GITHUB_TOKEN) {
         try {
-            const profile = await getAdminProfile();
-            adminUser = profile.username;
+            profile = await getAdminSettings();
         } catch (error) {
             const status = error instanceof AdminProfileError ? error.status : 502;
             console.error('Erro ao carregar perfil para login', error);
@@ -76,15 +80,25 @@ export default async function handler(req, res) {
         }
     }
 
-    const userOk = timingSafeEqualStrings(username, adminUser);
-    const passOk = timingSafeEqualStrings(password, adminPassword);
+    if (!profile.username || (!profile.passwordHash && !process.env.ADMIN_PASSWORD)) {
+        return res.status(500).json({ error: 'Admin não configurado no servidor.' });
+    }
+
+    const userOk = timingSafeEqualStrings(username, profile.username);
+    let passOk = false;
+    try {
+        passOk = await verifyAdminPassword(password, profile);
+    } catch (error) {
+        console.error('Erro ao verificar senha do administrador', error);
+        return res.status(500).json({ error: 'Não foi possível verificar a senha do administrador.' });
+    }
 
     if (!userOk || !passOk) {
         return res.status(401).json({ error: 'Usuário ou senha inválidos.' });
     }
 
     attempts.delete(ip);
-    const token = createSessionToken(adminUser);
+    const token = createSessionToken(profile.username);
     res.setHeader('Set-Cookie', buildSessionCookie(token));
     return res.status(200).json({ ok: true });
 }
