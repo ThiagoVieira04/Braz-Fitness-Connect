@@ -188,11 +188,7 @@ Os códigos expiram em 10 minutos, têm limite de tentativas e só podem ser usa
 
 ## Contato
 
-- **WhatsApp da academia:** [+55 21 98722-0665](https://wa.me/5521987220665)
-- **Pix da Braz Fitness:** +55 21 98722-0665
-- **Instagram:** [@academiabrazfitness](https://www.instagram.com/academiabrazfitness)
-- **Facebook:** [Página Braz Fitness](https://www.facebook.com/sidlaine.thomaz)
-- **Local:** Rua Guarani, nº 2334 — Piabetá, Magé/RJ
+- **WhatsApp:** [+55 21 98717-2463](https://wa.me/5521987172463)
 
 ---
 
