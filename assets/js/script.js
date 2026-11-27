@@ -120,11 +120,6 @@ const CATALOG_MEDIA = [
     { type: 'image', src: 'assets/media/imagens/img09.jpeg' }
 ];
 
-const TESTIMONIALS_MEDIA = [
-    { type: 'video', src: 'assets/media/videos/depo 1.mp4' },
-    { type: 'video', src: 'assets/media/videos/depo 2.mp4' }
-];
-
 /* --------------------------------------------------------------------------
    3. DOM REFERENCES
    -------------------------------------------------------------------------- */
@@ -166,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderServices();
     renderPlans();
     renderCatalog();
-    renderTestimonials();
+    loadTestimonials();
 });
 
 /* --------------------------------------------------------------------------
@@ -732,7 +727,21 @@ async function renderCatalog() {
     });
 }
 
-function renderTestimonials() {
+async function loadTestimonials() {
+    try {
+        const response = await fetch('/data/testimonials.json', { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar depoimentos (${response.status}).`);
+        }
+        const items = await response.json();
+        renderTestimonials(Array.isArray(items) ? items : []);
+    } catch (error) {
+        console.error('Não foi possível carregar os depoimentos.', error);
+        renderTestimonials([]);
+    }
+}
+
+function renderTestimonials(items) {
     const track = document.getElementById('testimonialsTrack');
     const dotsContainer = document.getElementById('testimonialsDots');
     const header = document.getElementById('testimonialsHeader');
@@ -740,7 +749,12 @@ function renderTestimonials() {
     const arrow = document.getElementById('testimonialsArrow');
     if (!track || !header || !body) return;
 
-    const media = TESTIMONIALS_MEDIA;
+    const media = items.filter(item => item && item.type === 'video' && typeof item.src === 'string' && item.src.trim());
+    header.hidden = media.length === 0;
+    body.hidden = media.length === 0;
+    track.replaceChildren();
+    dotsContainer.replaceChildren();
+    if (!media.length) return;
 
     let currentIndex = 0;
     let startX = 0;
@@ -754,7 +768,7 @@ function renderTestimonials() {
         if (item.type === 'video') {
             slide.innerHTML = `
                 <div class="video-container">
-                    <video src="${item.src}" muted playsinline preload="metadata"${index === media.length - 1 ? ' loop' : ''}></video>
+                    <video muted playsinline preload="metadata"${index === media.length - 1 ? ' loop' : ''}></video>
                     <div class="video-controls">
                         <button class="video-btn video-play-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
                         <button class="video-btn video-stop-btn" title="Parar"><i class="fas fa-stop"></i></button>
@@ -765,14 +779,19 @@ function renderTestimonials() {
                         <button class="video-btn video-expand-btn" title="Tela cheia"><i class="fas fa-expand" aria-hidden="true"></i></button>
                     </div>
                 </div>`;
+            slide.querySelector('video').src = item.src;
         } else {
-            slide.innerHTML = `<img src="${item.src}" alt="Depoimento ${index + 1}" loading="lazy">`;
+            const image = document.createElement('img');
+            image.src = item.src;
+            image.alt = `Depoimento ${index + 1}`;
+            image.loading = 'lazy';
+            slide.appendChild(image);
         }
 
         slide.addEventListener('click', (e) => {
             if (e.target.closest('.video-controls')) return;
             const tv = slide.querySelector('video');
-            openMediaViewer(item.type, item.src, TESTIMONIALS_MEDIA, tv ? tv.currentTime : 0);
+            openMediaViewer(item.type, item.src, media, tv ? tv.currentTime : 0);
         });
 
         track.appendChild(slide);
@@ -881,7 +900,7 @@ function renderTestimonials() {
 
     goToSlide(0);
 
-    track.querySelectorAll('.video-container').forEach(vc => bindVideoControls(vc, TESTIMONIALS_MEDIA));
+    track.querySelectorAll('.video-container').forEach(vc => bindVideoControls(vc, media));
 
     header.addEventListener('click', () => {
         body.classList.toggle('open');

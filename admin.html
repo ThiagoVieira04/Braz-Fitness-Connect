@@ -50,6 +50,7 @@
             <nav class="admin-tabs" aria-label="Seções do painel">
                 <button type="button" class="admin-tab active" id="plansTab" data-tab="plans" aria-controls="plansPanel" aria-selected="true">Planos e Valores</button>
                 <button type="button" class="admin-tab" id="mediaTab" data-tab="media" aria-controls="mediaPanel" aria-selected="false">Por Dentro da Braz</button>
+                <button type="button" class="admin-tab" id="testimonialsTab" data-tab="testimonials" aria-controls="testimonialsPanel" aria-selected="false">Depoimentos</button>
                 <button type="button" class="admin-tab" id="accountTab" data-tab="account" aria-controls="accountPanel" aria-selected="false">Minha conta</button>
             </nav>
 
@@ -79,6 +80,25 @@
                 </form>
 
                 <p class="message" id="mediaStatus" hidden></p>
+            </div>
+
+            <div class="admin-panel" id="testimonialsPanel" hidden>
+                <p class="hint">Selecione vídeos do celular (.mp4, .webm ou .mov). Após enviar ou excluir vídeos, clique em <strong>Salvar depoimentos</strong> para atualizar o site.</p>
+
+                <form id="testimonialsForm">
+                    <label class="field">
+                        <span>Adicionar vídeo do celular</span>
+                        <input type="file" id="testimonialFile" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov">
+                        <small class="media-upload-status" id="testimonialUploadStatus" role="status"></small>
+                    </label>
+                    <p class="hint" id="testimonialsEmptyState" hidden>Nenhum vídeo cadastrado. Selecione um vídeo do celular para começar.</p>
+                    <div id="testimonialsEditor" class="media-editor"></div>
+                    <div class="actions">
+                        <button type="submit" class="btn-primary" id="saveTestimonialsBtn">Salvar depoimentos</button>
+                    </div>
+                </form>
+
+                <p class="message" id="testimonialsStatus" hidden></p>
             </div>
 
             <div class="admin-panel" id="accountPanel" hidden>

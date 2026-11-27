@@ -16,6 +16,13 @@ const mediaEditor = document.getElementById('mediaEditor');
 const addMediaBtn = document.getElementById('addMediaBtn');
 const saveMediaBtn = document.getElementById('saveMediaBtn');
 const mediaStatusEl = document.getElementById('mediaStatus');
+const testimonialsForm = document.getElementById('testimonialsForm');
+const testimonialsEditor = document.getElementById('testimonialsEditor');
+const testimonialsEmptyState = document.getElementById('testimonialsEmptyState');
+const testimonialFile = document.getElementById('testimonialFile');
+const testimonialUploadStatus = document.getElementById('testimonialUploadStatus');
+const saveTestimonialsBtn = document.getElementById('saveTestimonialsBtn');
+const testimonialsStatusEl = document.getElementById('testimonialsStatus');
 const accountForm = document.getElementById('accountForm');
 const accountName = document.getElementById('accountName');
 const accountUsername = document.getElementById('accountUsername');
@@ -27,6 +34,7 @@ const accountStatusEl = document.getElementById('accountStatus');
 
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 const MAX_MEDIA_ITEMS = 100;
+const MAX_TESTIMONIAL_ITEMS = 100;
 
 const MEDIA_TYPES = [
     { value: 'video', label: 'Vídeo' },
@@ -66,9 +74,11 @@ function activateTab(name) {
     });
     const plansPanel = document.getElementById('plansPanel');
     const mediaPanel = document.getElementById('mediaPanel');
+    const testimonialsPanel = document.getElementById('testimonialsPanel');
     const accountPanel = document.getElementById('accountPanel');
     if (plansPanel) plansPanel.hidden = name !== 'plans';
     if (mediaPanel) mediaPanel.hidden = name !== 'media';
+    if (testimonialsPanel) testimonialsPanel.hidden = name !== 'testimonials';
     if (accountPanel) accountPanel.hidden = name !== 'account';
 }
 
@@ -400,6 +410,106 @@ function collectMedia() {
     }));
 }
 
+function createTestimonialRow(src, index) {
+    const row = document.createElement('div');
+    row.className = 'media-row';
+
+    const head = document.createElement('div');
+    head.className = 'media-row-head';
+
+    const title = document.createElement('span');
+    title.className = 'media-row-title';
+    title.textContent = `Depoimento ${index + 1}`;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn-remove';
+    removeBtn.textContent = 'Excluir';
+    removeBtn.setAttribute('aria-label', `Excluir depoimento ${index + 1}`);
+    removeBtn.addEventListener('click', () => {
+        if (window.confirm('Excluir este vídeo de depoimento?')) {
+            row.remove();
+            renumberTestimonials();
+        }
+    });
+
+    const video = document.createElement('video');
+    video.src = src;
+    video.controls = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+    video.className = 'testimonial-preview';
+
+    head.appendChild(title);
+    head.appendChild(removeBtn);
+    row.appendChild(head);
+    row.appendChild(video);
+    row.dataset.src = src;
+    return row;
+}
+
+function renumberTestimonials() {
+    const rows = testimonialsEditor.querySelectorAll('.media-row');
+    if (testimonialsEmptyState) testimonialsEmptyState.hidden = rows.length > 0;
+    rows.forEach((row, index) => {
+        const title = row.querySelector('.media-row-title');
+        const removeBtn = row.querySelector('.btn-remove');
+        if (title) title.textContent = `Depoimento ${index + 1}`;
+        if (removeBtn) removeBtn.setAttribute('aria-label', `Excluir depoimento ${index + 1}`);
+    });
+    if (testimonialFile) {
+        testimonialFile.disabled = rows.length >= MAX_TESTIMONIAL_ITEMS;
+    }
+}
+
+function renderTestimonialsEditor(items) {
+    testimonialsEditor.replaceChildren(...items.map((item, index) => createTestimonialRow(item.src, index)));
+    renumberTestimonials();
+}
+
+function collectTestimonials() {
+    return Array.from(testimonialsEditor.querySelectorAll('.media-row')).map(row => ({
+        type: 'video',
+        src: row.dataset.src
+    }));
+}
+
+async function handleTestimonialUpload(file) {
+    clearMessage(testimonialsStatusEl);
+    if (!file.type.startsWith('video/')) {
+        testimonialUploadStatus.textContent = 'Selecione um arquivo de vídeo.';
+        return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+        testimonialUploadStatus.textContent = 'Arquivo muito grande (máximo 100 MB).';
+        return;
+    }
+    if (testimonialsEditor.children.length >= MAX_TESTIMONIAL_ITEMS) {
+        testimonialUploadStatus.textContent = 'Limite de 100 vídeos atingido.';
+        return;
+    }
+
+    testimonialFile.disabled = true;
+    testimonialUploadStatus.textContent = 'Enviando... 0%';
+    try {
+        const blob = await upload(file.name, file, {
+            access: 'public',
+            handleUploadUrl: '/api/upload',
+            onUploadProgress: ({ percentage }) => {
+                testimonialUploadStatus.textContent = `Enviando... ${Math.round(percentage)}%`;
+            }
+        });
+        testimonialsEditor.appendChild(createTestimonialRow(blob.url, testimonialsEditor.children.length));
+        renumberTestimonials();
+        testimonialUploadStatus.textContent = 'Vídeo enviado. Clique em Salvar depoimentos para publicar.';
+    } catch (error) {
+        testimonialUploadStatus.textContent = error.message || 'Falha ao enviar o vídeo.';
+    } finally {
+        testimonialFile.value = '';
+        testimonialFile.disabled = testimonialsEditor.children.length >= MAX_TESTIMONIAL_ITEMS;
+    }
+}
+
 /* --------------------------------------------------------------------------
    CARREGAMENTO
    -------------------------------------------------------------------------- */
@@ -443,10 +553,30 @@ async function loadCatalog() {
     }
 }
 
+async function loadTestimonials() {
+    try {
+        const response = await fetch('/api/testimonials', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            showLogin();
+            return;
+        }
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao carregar os depoimentos.');
+        }
+        renderTestimonialsEditor(Array.isArray(data.items) ? data.items : []);
+        clearMessage(testimonialsStatusEl);
+    } catch (error) {
+        renderTestimonialsEditor([]);
+        setMessage(testimonialsStatusEl, error.message, 'error');
+    }
+}
+
 async function loadAll() {
     await loadPlans();
     if (!editorView.hidden) {
         await loadCatalog();
+        await loadTestimonials();
         try {
             await loadAdminProfile();
             clearMessage(accountStatusEl);
@@ -480,6 +610,11 @@ if (addMediaBtn) {
         if (srcInput) srcInput.focus();
     });
 }
+
+testimonialFile.addEventListener('change', () => {
+    const file = testimonialFile.files && testimonialFile.files[0];
+    if (file) handleTestimonialUpload(file);
+});
 
 document.querySelectorAll('.admin-tab').forEach(tab => {
     tab.addEventListener('click', () => activateTab(tab.dataset.tab));
@@ -587,6 +722,36 @@ mediaForm.addEventListener('submit', async event => {
     } finally {
         saveMediaBtn.disabled = false;
         saveMediaBtn.textContent = 'Salvar mídias';
+    }
+});
+
+testimonialsForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    clearMessage(testimonialsStatusEl);
+    saveTestimonialsBtn.disabled = true;
+    saveTestimonialsBtn.textContent = 'Salvando...';
+
+    try {
+        const response = await fetch('/api/testimonials', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ items: collectTestimonials() })
+        });
+        if (response.status === 401) {
+            showLogin();
+            throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao salvar os depoimentos.');
+        }
+        setMessage(testimonialsStatusEl, 'Salvo! O site será atualizado em cerca de 10 segundos.', 'success');
+    } catch (error) {
+        setMessage(testimonialsStatusEl, error.message, 'error');
+    } finally {
+        saveTestimonialsBtn.disabled = false;
+        saveTestimonialsBtn.textContent = 'Salvar depoimentos';
     }
 });
 
