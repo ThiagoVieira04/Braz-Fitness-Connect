@@ -1,6 +1,6 @@
 # Academia Braz Fitness
 
-Cartão de visita digital da academia em **Magé/RJ** — treinos, portfólio, depoimentos e pagamento Pix em um único link.
+Presença digital oficial da **Academia Braz Fitness**, em Piabetá, Magé/RJ. Reúne planos, modalidades, contato, localização, vídeos, depoimentos e informações de pagamento em um só lugar.
 
 **[Acessar o Site](https://braz-fitness-connect.vercel.app/)**
 
@@ -24,13 +24,13 @@ Cartão de visita digital da academia em **Magé/RJ** — treinos, portfólio, d
 | WhatsApp | Conversa direto pelo número da academia |
 | Instagram / Facebook | Acompanhe as atualizações |
 | Localização | Abre o endereço no Google Maps |
-| Nossos Serviços | Accordion com musculação, treino funcional, personal trainer, avaliação física, crossfit, aulas coletivas, cardio e acompanhamento nutricional |
-| Catálogo de Serviços | Carrossel de imagens e vídeos dos treinos |
+| Modalidades e planos | Musculação, funcional, personal trainer, avaliação física, aulas coletivas, cardio e acompanhamento nutricional; planos incluem Jump, Step e Muay Thai |
+| Por Dentro da Braz | Carrossel de imagens e vídeos da academia e dos treinos |
 | Depoimentos | Carrossel de vídeos gerenciado pelo admin; termina um, o próximo entra sozinho |
 | Tela cheia | Visualizador com play, volume, setas e avanço automático |
-| Pix | Copia a chave (Nubank, nome: Sidlaine Thomaz Nascimento) ou escolhe o banco |
+| Pix | Copia a chave Pix da academia ou escolhe o aplicativo do banco |
 | Escolha seu banco | Abre o app do banco direto no celular, com fallback para a loja de aplicativos |
-| WiFi Grátis | Rede `SIDILAINE_THOMAZ-5G` com senha e botão "Conectar Agora" |
+| WiFi Grátis | Rede `INET ACADEMIA BRAZ FITNESS 5G`, senha copiável e botão para abrir as configurações de Wi-Fi |
 | QR Code | Gera QR Code da página para compartilhar |
 | Acessibilidade | Tema claro/escuro, alto contraste e VLibras |
 | PWA | Instala como aplicativo no celular |
@@ -57,27 +57,28 @@ Acesse `http://localhost:8000`
 
 ## Como Personalizar
 
-Tudo mora no topo de `assets/js/script.js`:
+Os dados fixos de contato e integração ficam no objeto `CONFIG`, no início de `assets/js/script.js`. O conteúdo dos planos e carrosséis é gerenciado pelo painel:
 
 ```javascript
 const CONFIG = {
-    pixKey: '+5521988593392',
+    pixKey: '+5521987220665',
     whatsappPhone: '5521987220665',
-    googleReviewUrl: 'https://g.page/r/.../review',
-    instagramUrl: 'https://www.instagram.com/thomazsidlaine',
+    googleReviewUrl: 'https://g.page/r/CaYM7P8yGrWjEBE/review',
+    instagramUrl: 'https://www.instagram.com/academiabrazfitness',
     facebookUrl: 'https://www.facebook.com/sidlaine.thomaz',
     pageUrl: 'https://braz-fitness-connect.vercel.app/',
-    wifiPassword: 'sidy1206',
-    wifiSSID: 'SIDILAINE_THOMAZ-5G',
+    wifiPassword: 'Fit142025',
+    wifiSSID: 'INET ACADEMIA BRAZ FITNESS 5G',
 };
 ```
 
-**Gerenciar vídeos:**
+**Conteúdo e identidade da academia:**
 
 - **Por Dentro da Braz** lê vídeos e imagens de `data/catalog.json`.
 - **Depoimentos** lê vídeos de `data/testimonials.json`.
-- Os dois carrosséis são atualizados pelo painel `/admin`; os depoimentos podem ser enviados do celular. Depois de alterar uma lista, salve para publicar a mudança.
+- Os dois carrosséis são atualizados pelo painel `/admin`; vídeos de depoimentos podem ser enviados do celular. Depois de alterar uma lista, salve para publicar a mudança.
 - A página pública lê os arquivos JSON; a lista de depoimentos não fica mais fixa em `assets/js/script.js`.
+- O endereço, os contatos, as redes sociais, o Pix e os dados de Wi-Fi acima devem corresponder às informações oficiais da Academia Braz Fitness.
 
 ---
 
@@ -187,13 +188,14 @@ Os códigos expiram em 10 minutos, têm limite de tentativas e só podem ser usa
 
 ## Contato
 
-- **WhatsApp:** [+55 21 98717-2463](https://wa.me/5521987172463)
-- **WhatsApp comercial:** [+55 21 98722-0665](https://wa.me/5521987220665)
-- **Pix:** +55 21 98859-3392
-- **Instagram:** [@thomazsidlaine](https://www.instagram.com/thomazsidlaine)
-- **Facebook:** [sidlaine.thomaz](https://www.facebook.com/sidlaine.thomaz)
+- **WhatsApp da academia:** [+55 21 98722-0665](https://wa.me/5521987220665)
+- **Pix da Braz Fitness:** +55 21 98722-0665
+- **Instagram:** [@academiabrazfitness](https://www.instagram.com/academiabrazfitness)
+- **Facebook:** [Página Braz Fitness](https://www.facebook.com/sidlaine.thomaz)
 - **Local:** Rua Guarani, nº 2334 — Piabetá, Magé/RJ
 
 ---
 
-Desenvolvido por **Papel e Sonhos Informática**
+Projeto digital oficial da **Academia Braz Fitness**
+
+Desenvolvido por Papel e Sonhos Informatica
