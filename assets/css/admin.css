@@ -143,13 +143,8 @@ body {
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: var(--muted);
+    color: #000;
     cursor: pointer;
-}
-
-.password-toggle:hover,
-.password-toggle:focus-visible {
-    color: var(--neon);
 }
 
 .password-toggle:focus-visible {
