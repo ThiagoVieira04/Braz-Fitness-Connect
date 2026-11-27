@@ -167,11 +167,7 @@ Configure as variáveis de ambiente no painel da Vercel:
 ## Contato
 
 - **WhatsApp:** [+55 21 98717-2463](https://wa.me/5521987172463)
-- **WhatsApp comercial:** [+55 21 98722-0665](https://wa.me/5521987220665)
-- **Pix:** +55 21 98859-3392
-- **Instagram:** [@thomazsidlaine](https://www.instagram.com/thomazsidlaine)
-- **Facebook:** [sidlaine.thomaz](https://www.facebook.com/sidlaine.thomaz)
-- **Local:** Rua Guarani, nº 2334 — Piabetá, Magé/RJ
+
 
 ---
 
