@@ -2,7 +2,7 @@
 
 Cartão de visita digital da academia em **Magé/RJ** — treinos, portfólio, depoimentos e pagamento Pix em um único link.
 
-**[Acessar o Site](https://papel-e-sonhos-connect.vercel.app/)**
+**[Acessar o Site](https://braz-fitness-connect.vercel.app/)**
 
 ---
 
@@ -26,7 +26,7 @@ Cartão de visita digital da academia em **Magé/RJ** — treinos, portfólio, d
 | Localização | Abre o endereço no Google Maps |
 | Nossos Serviços | Accordion com musculação, treino funcional, personal trainer, avaliação física, crossfit, aulas coletivas, cardio e acompanhamento nutricional |
 | Catálogo de Serviços | Carrossel de imagens e vídeos dos treinos |
-| Depoimentos | Vídeos em carrossel — termina um, o próximo entra sozinho |
+| Depoimentos | Carrossel de vídeos gerenciado pelo admin; termina um, o próximo entra sozinho |
 | Tela cheia | Visualizador com play, volume, setas e avanço automático |
 | Pix | Copia a chave (Nubank, nome: Sidlaine Thomaz Nascimento) ou escolhe o banco |
 | Escolha seu banco | Abre o app do banco direto no celular, com fallback para a loja de aplicativos |
@@ -66,26 +66,18 @@ const CONFIG = {
     googleReviewUrl: 'https://g.page/r/.../review',
     instagramUrl: 'https://www.instagram.com/thomazsidlaine',
     facebookUrl: 'https://www.facebook.com/sidlaine.thomaz',
-    pageUrl: 'https://papel-e-sonhos-connect.vercel.app/',
+    pageUrl: 'https://braz-fitness-connect.vercel.app/',
     wifiPassword: 'sidy1206',
     wifiSSID: 'SIDILAINE_THOMAZ-5G',
 };
 ```
 
-**Trocar os vídeos:**
+**Gerenciar vídeos:**
 
-O carrossel **Por Dentro da Braz** é carregado de `data/catalog.json` (editável pelo painel `/admin`). O array em `assets/js/script.js` serve apenas como fallback caso o JSON não esteja disponível:
-
-```javascript
-const CATALOG_MEDIA = [ /* fallback do catálogo */ ];
-
-const TESTIMONIALS_MEDIA = [
-    { type: 'video', src: 'assets/media/videos/depo 1.mp4' },
-    { type: 'video', src: 'assets/media/videos/depo 2.mp4' },
-];
-```
-
-Para adicionar vídeos e imagens, prefira o painel `/admin` → **Por Dentro da Braz**.
+- **Por Dentro da Braz** lê vídeos e imagens de `data/catalog.json`.
+- **Depoimentos** lê vídeos de `data/testimonials.json`.
+- Os dois carrosséis são atualizados pelo painel `/admin`; os depoimentos podem ser enviados do celular. Depois de alterar uma lista, salve para publicar a mudança.
+- A página pública lê os arquivos JSON; a lista de depoimentos não fica mais fixa em `assets/js/script.js`.
 
 ---
 
@@ -95,19 +87,23 @@ Para adicionar vídeos e imagens, prefira o painel `/admin` → **Por Dentro da 
 ├── index.html              ← Página principal
 ├── admin.html              ← Painel administrativo
 ├── style.css               ← Estilos e temas
-├── package.json            ← Dependência @vercel/blob
-├── api/                    ← Funções serverless (login, planos, catálogo, upload)
-├── lib/                    ← Sessão do admin
+├── package.json            ← Dependências e comandos de validação/build
+├── api/                    ← APIs serverless de login, conta, conteúdo, upload e recuperação
+├── lib/                    ← Sessão, perfil admin e recuperação de senha
 ├── data/
 │   ├── plans.json          ← Planos editáveis
-│   └── catalog.json        ← Mídias de "Por Dentro da Braz"
+│   ├── catalog.json        ← Mídias de "Por Dentro da Braz"
+│   └── testimonials.json   ← Vídeos de depoimentos
 ├── assets/
-│   ├── js/script.js        ← Lógica, CONFIG e fallback de mídias
+│   ├── css/admin.css       ← Estilos do painel
+│   ├── js/
+│   │   ├── script.js       ← Interface pública, carrosséis e CONFIG
+│   │   └── admin.js        ← Interface do painel
 │   ├── img/                ← Logo, ícones e gifs
-│   └── media/videos/       ← Catálogo + depoimentos (depo 1, depo 2)
+│   └── media/              ← Imagens e vídeos mantidos no repositório
 ├── manifest.json           ← PWA
 ├── vercel.json             ← Deploy na Vercel
-├── .htaccess / web.config  ← Apache e IIS
+├── web.config              ← Configuração IIS
 ├── robots.txt / sitemap.xml ← SEO
 ```
 
@@ -115,20 +111,35 @@ Para adicionar vídeos e imagens, prefira o painel `/admin` → **Por Dentro da 
 
 ## Deploy
 
-1. Conecte o repositório ao [vercel.com](https://vercel.com)
-2. Clique em **Deploy**
+O projeto é publicado na Vercel e usa Node.js 24 para as funções serverless.
+
+1. Importe `ThiagoVieira04/Braz-Fitness-Connect` na [Vercel](https://vercel.com).
+2. Configure as variáveis de ambiente descritas abaixo e conecte um Vercel Blob público.
+3. Faça o deploy. Commits enviados à branch configurada (por padrão `main`) iniciam novos deploys automaticamente.
+
+Para validar localmente:
+
+```bash
+npm install
+npm run check
+npm test
+```
+
+`python -m http.server` serve apenas os arquivos estáticos; as APIs administrativas dependem do ambiente serverless e das variáveis de ambiente da Vercel.
 
 ---
 
-## Admin (Planos e Mídias)
+## Painel Admin
 
-A página `/admin` permite:
-- editar os valores dos planos exibidos no site (`data/plans.json`);
-- gerenciar o carrossel **Por Dentro da Braz** (`data/catalog.json`), adicionando vídeos e imagens por link (YouTube, Instagram, `.mp4`) ou por upload de arquivo.
-- alterar o nome exibido no painel e o usuário de acesso, confirmando com a senha atual.
+A página `/admin` oferece as seções **Planos e Valores**, **Por Dentro da Braz**, **Depoimentos** e **Minha conta**:
 
-Ao salvar, o JSON correspondente é atualizado via commit no GitHub e a Vercel refaz o deploy automaticamente (~10s). Os arquivos enviados pelo painel são armazenados no **Vercel Blob** (não incham o repositório).
-O perfil do administrador é criptografado com `SESSION_SECRET` antes de ser salvo no GitHub. A senha inicial é configurada por `ADMIN_PASSWORD`; se alterada pelo painel, o hash é guardado dentro do perfil criptografado. Novas senhas devem ter de 12 a 128 caracteres.
+- editar os planos exibidos no site (`data/plans.json`);
+- gerenciar vídeos e imagens do carrossel **Por Dentro da Braz** (`data/catalog.json`);
+- enviar vídeos do celular para **Depoimentos** e remover vídeos da lista publicada (`data/testimonials.json`);
+- atualizar nome, usuário, e-mail de recuperação e senha do administrador.
+
+Ao salvar conteúdo, o JSON correspondente é atualizado via commit no GitHub e a Vercel inicia um novo deploy. Vídeos e imagens enviados ficam no **Vercel Blob**; excluir um depoimento remove a referência do site, mas não apaga o arquivo do Blob.
+O perfil do administrador é criptografado com `SESSION_SECRET` antes de ser salvo no GitHub. A senha inicial é configurada por `ADMIN_PASSWORD`; se alterada pelo painel, o hash é guardado dentro do perfil criptografado. Novas senhas devem ter de 12 a 128 caracteres. Os campos de senha do painel têm um controle para mostrar ou ocultar o valor.
 
 Configure as variáveis de ambiente no painel da Vercel:
 
@@ -137,11 +148,21 @@ Configure as variáveis de ambiente no painel da Vercel:
 | `ADMIN_USER` | Usuário do admin |
 | `ADMIN_NAME` | Nome inicial exibido no admin (opcional; por padrão usa `ADMIN_USER`) |
 | `ADMIN_PASSWORD` | Senha inicial do admin (antes da primeira troca pelo painel) |
+| `RESEND_API_KEY` | Chave da API do Resend para envio dos códigos de recuperação |
+| `EMAIL_FROM` | Remetente verificado no Resend (por exemplo, `Braz Fitness <admin@seudominio.com>`) |
 | `SESSION_SECRET` | String aleatória longa para assinar a sessão |
 | `GITHUB_TOKEN` | PAT fine-grained com **Contents: Read and write** neste repositório |
 | `GITHUB_REPO` | `ThiagoVieira04/Braz-Fitness-Connect` |
 | `GITHUB_BRANCH` | `main` |
 | `BLOB_READ_WRITE_TOKEN` | Token read-write do Vercel Blob (gerado ao conectar um Blob Store público ao projeto) |
+
+Para habilitar a recuperação automática:
+
+1. Crie uma conta no Resend e verifique um domínio/remetente para envio.
+2. Configure `RESEND_API_KEY` e `EMAIL_FROM` na Vercel e faça um novo deploy.
+3. Entre no painel, abra **Minha conta** e cadastre o e-mail de recuperação.
+
+Os códigos expiram em 10 minutos, têm limite de tentativas e só podem ser usados uma vez. O projeto usa o endpoint de e-mail do Resend diretamente, sem dependência adicional.
 
 ### Uploads (Vercel Blob)
 
