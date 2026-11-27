@@ -54,6 +54,40 @@ function clearMessage(element) {
     element.hidden = true;
 }
 
+function initializePasswordToggles() {
+    document.querySelectorAll('.field input[type="password"]').forEach(input => {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'password-input-wrap';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'password-toggle';
+        button.setAttribute('aria-label', 'Mostrar senha');
+        button.setAttribute('aria-pressed', 'false');
+        button.title = 'Mostrar senha';
+
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-eye';
+        icon.setAttribute('aria-hidden', 'true');
+        button.appendChild(icon);
+
+        button.addEventListener('click', () => {
+            const showPassword = input.type === 'password';
+            input.type = showPassword ? 'text' : 'password';
+            button.setAttribute('aria-label', showPassword ? 'Ocultar senha' : 'Mostrar senha');
+            button.setAttribute('aria-pressed', String(showPassword));
+            button.title = showPassword ? 'Ocultar senha' : 'Mostrar senha';
+            icon.className = showPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+        });
+
+        wrapper.appendChild(button);
+    });
+}
+
+initializePasswordToggles();
+
 function showLogin() {
     editorView.hidden = true;
     loginView.hidden = false;
